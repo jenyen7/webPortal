@@ -1,0 +1,487 @@
+﻿@model EnterprisePortal.Models.VotingContent
+
+@{
+    string title = "投票";
+    string fullTitle = title + "系統";
+    string listName = title + "列表";
+    string subList = "新增" + title;
+    ViewBag.Title = "新增題目";
+}
+
+@section styles{
+    <style>
+        .push-down {
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .space-btw {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .question-type {
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: white;
+            border: none;
+            outline: none;
+            height: 30px;
+            max-width: 80px;
+            text-align: center;
+            cursor: default;
+        }
+
+        .no-multiplechoice {
+            background-color: #3498DB;
+        }
+
+        .multiplechoice {
+            background-color: #34495E;
+        }
+
+        .toolbox {
+            position: absolute;
+            right: -50px;
+            max-width: 50px;
+        }
+
+        .border-white {
+            border: 1px solid white;
+        }
+
+        .choice-block {
+            margin-top: 20px;
+            display: flex;
+        }
+
+        .underline {
+            background-color: transparent;
+            outline: none;
+            border: none;
+            width: 80%;
+            height: 40px;
+            padding-left: 10px;
+        }
+
+            .underline:hover, .underline:focus {
+                background-color: #F1F1F1;
+                border-bottom: 1.5px solid #CCC;
+            }
+
+            .underline:focus {
+                border-color: #0073AA;
+            }
+
+        .remove-choice-btn {
+            outline: none;
+            border: none;
+            color: #0073AA;
+            background-color: transparent;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+            .remove-choice-btn:hover {
+                color: black;
+            }
+
+        .input-container {
+            display: inline-block;
+            position: relative;
+            padding-right: 30px;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+            .input-container input {
+                opacity: 0;
+            }
+
+            .input-container:hover input ~ .vote-checkmark {
+                background-color: #CCC;
+            }
+
+            .input-container input:checked ~ .vote-checkmark {
+                background-color: #0073AA;
+            }
+
+        .vote-checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #D3D3D3;
+        }
+
+        .checkmark-position {
+            top: 10px;
+            left: 10px;
+        }
+
+        /*checkbox style*/
+        .checkbox-style {
+        }
+
+        .ck-checkmark {
+            height: 20px;
+            width: 20px;
+            border-radius: 3px;
+        }
+
+            .ck-checkmark:after {
+                content: "";
+                position: absolute;
+                display: none;
+            }
+
+        .input-container input:checked ~ .ck-checkmark:after {
+            display: block;
+        }
+
+        .checkbox-style .ck-checkmark:after {
+            left: 7px;
+            top: 5px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            -webkit-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            transform: rotate(45deg);
+        }
+
+        /*radio-button style*/
+        .radiobtn-style {
+        }
+
+        .rb-checkmark {
+            height: 21px;
+            width: 21px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+            .rb-checkmark:after {
+                content: "";
+                position: absolute;
+                display: none;
+                transform: scale(0);
+            }
+
+        .input-container input:checked ~ .rb-checkmark:after {
+            display: block;
+            transform: scale(1);
+        }
+
+        .radiobtn-style .rb-checkmark:after {
+            top: 5px;
+            left: 5px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: white;
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+        <span>收集大家意見的地方。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index","Votings")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Edit","Votings",new { id=ViewBag.VotingId})">@subList</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-10">
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "questionsform" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="votingId" value="@ViewBag.VotingId" />
+                <div id="question-block">
+                    <button type="button" id="addNewQuestionBtn" class="btn btn-primary push-down" style="display:none"><i class="icofont icofont-plus"></i>新增問題</button>
+                    <div class="card" style="display:none">
+                        <div class="card-header space-btw">
+                            <h5>第1題</h5>
+                            <div>
+                                <input type="text" value="單選題" class="question-type no-multiplechoice" readonly />
+                                <input type="hidden" name="question" class="question ismultiplechoice" value="radioBtn" />
+                            </div>
+                        </div>
+                        <div class="card-block">
+                            <ul class="">
+                                <li class="title-block">
+                                    <input type="text" name="question" class="underline titles question" placeholder="題目" />
+                                </li>
+                                <li class="choice-block">
+                                    <label class="input-container radiobtn-style">
+                                        <input type="radio" disabled />
+                                        <span class="vote-checkmark rb-checkmark checkmark-position"></span>
+                                    </label>
+                                    <input type="text" name="question" class="underline choices question" placeholder="新增選項" />
+                                    <button type="button" class="remove-choice-btn" title="刪除選項"><i class="icofont icofont-close-circled"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="toolbox">
+                            <button type="button" class="btn btn-primary border-white addQuestionBtn" title="新增題目">
+                                <i class="icofont icofont-plus" style="padding:0;margin:0"></i>
+                            </button>
+                            <button type="button" class="btn btn-primary border-white multipleChoiceSwitch" title="切換單選/複選">
+                                <i class="icofont icofont-listine-dots" style="padding:0;margin:0"></i>
+                            </button>
+                            <button type="button" class="btn btn-primary border-white removeQuestionBtn" title="刪除題目">
+                                <i class="icofont icofont-bin" style="padding:0;margin:0"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header space-btw">
+                            <h5>第 1 題</h5>
+                            <div>
+                                <input type="text" value="單選題" class="question-type no-multiplechoice" readonly />
+                                <input type="hidden" name="question" class="question" value="radioBtn" />
+                            </div>
+                        </div>
+                        <div class="card-block">
+                            <ul class="col-md-11">
+                                <li class="title-block">
+                                    <input type="text" name="question" class="underline titles question" placeholder="題目" />
+                                </li>
+                                <li class="choice-block">
+                                    <label class="input-container radiobtn-style">
+                                        <input type="radio" disabled />
+                                        <span class="vote-checkmark rb-checkmark checkmark-position"></span>
+                                    </label>
+                                    <input type="text" name="question" class="underline choices question" placeholder="新增選項" />
+                                    <button type="button" class="remove-choice-btn" title="刪除選項"><i class="icofont icofont-close-circled"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="toolbox">
+                            <button type="button" class="btn btn-primary border-white addQuestionBtn" title="新增題目">
+                                <i class="icofont icofont-plus" style="padding:0;margin:0"></i>
+                            </button>
+                            <button type="button" class="btn btn-primary border-white multipleChoiceSwitch" title="切換單選/複選">
+                                <i class="icofont icofont-listine-dots" style="padding:0;margin:0"></i>
+                            </button>
+                            <button type="button" class="btn btn-primary border-white removeQuestionBtn" title="刪除題目">
+                                <i class="icofont icofont-bin" style="padding:0;margin:0"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group text-right">
+                        <a href="@Url.Action("Edit","Votings",new {id = ViewBag.VotingId})" class="previous-btn">上一步</a>
+                        <input type="button" id="saveQuestionsBtn" value="新增/傳送對象" class="btn btn-inverse" />
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ListModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="DepsList">
+            @Html.Action("RenderRecipients", "VotingContents", new { id = ViewBag.VotingId })
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(".theme-loader").remove();
+
+        $('#saveQuestionsBtn').click(function (e) {
+            e.preventDefault();
+            if (!$('#questionsform').valid()) {
+                return false;
+            };
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var votingId = $('#votingId').val();
+            var count = 1;
+            var question_arr = [];
+            var question_empty = [];
+            var isEmpty = false;
+            var questionBlock = $('div#question-block .question').slice(3);
+            questionBlock.each(function () {
+                var isTitle = $(this).hasClass('titles');
+                if ($(this).val()) {
+                    question_arr.push($(this).val());
+                    if (isTitle) {
+                        count++;
+                    };
+                } else {
+                    if (isTitle) {
+                        if ($(this).val() == '') {
+                            isEmpty = true;
+                            question_empty.push(count);
+                        };
+                        count++;
+                    };
+                };
+            });
+            if (isEmpty) {
+                alert('第' + question_empty.join(',') + '題的題目沒有填到喔~');
+                return false;
+            };
+
+            var question_string = question_arr.join(',');
+            console.log(question_string);
+            $.post('@Url.Action("Create", "VotingContents")', { __RequestVerificationToken: token, id: votingId, allQuestions: question_string },
+                function (data) {
+                    $('#ListModal').modal('show');
+                });
+        });
+
+        (function ($) {
+            var questionBlock = $('div#question-block');
+            var questionNumber;
+            var totalNum;
+            function countQuestions() {
+                var displayQnum = $('#question-block div.space-btw h5').slice(1);
+                questionNumber = 1;
+                displayQnum.each(function () {
+                    $(this).text("第" + questionNumber + "題");
+                    questionNumber++;
+                });
+
+                totalNum = $('#question-block div.card').length;
+                if (totalNum < 2) {
+                    $('#addNewQuestionBtn').show();
+                };
+            };
+
+            questionBlock.on('click', '#addNewQuestionBtn',function (e) {
+                e.preventDefault();
+                var card_block = $(this).next('div.card');
+                card_block.after(card_block.clone().removeAttr('style'));
+                $('#addNewQuestionBtn').hide();
+            });
+
+            questionBlock.on('click', '.addQuestionBtn', function (e) {
+                e.preventDefault();
+                $(this).parents('.card').after($('div#question-block .card').first().clone().removeAttr('style'));
+                countQuestions();
+            });
+
+            questionBlock.on('click','.multipleChoiceSwitch',function (e) {
+                e.preventDefault();
+                var labelText = $(this).parent().siblings('.card-header');
+                var inputType = $(this).parent().siblings('.card-block').find('label.input-container');
+                if (inputType.hasClass('radiobtn-style')) {
+                    $(this).removeClass('btn-primary').addClass('btn-inverse');
+                    labelText.find('input.question-type').removeClass('no-multiplechoice').addClass('multiplechoice').val('複選題');
+                    labelText.find('input.question').val('checkBoxes');
+                    inputType.removeClass('radiobtn-style').addClass('checkbox-style');
+                    inputType.children('input').attr('type', 'checkbox');
+                    inputType.children('span').removeClass('rb-checkmark').addClass('ck-checkmark');
+                } else {
+                    $(this).removeClass('btn-inverse').addClass('btn-primary');
+                    labelText.find('input.question-type').removeClass('multiplechoice').addClass('no-multiplechoice').val('單選題');
+                    labelText.find('input.question').val('radioBtn');
+                    inputType.removeClass('checkbox-style').addClass('radiobtn-style');
+                    inputType.children('input').attr('type', 'radio');
+                    inputType.children('span').removeClass('ck-checkmark').addClass('rb-checkmark');
+                };
+            });
+
+            questionBlock.on('click', '.removeQuestionBtn',function (e) {
+                e.preventDefault();
+                $(this).parents('.card').remove();
+                countQuestions();
+            });
+
+            questionBlock.on('keyup', '.choices', function (e) {
+                e.preventDefault();
+                var choiceBlock = $(this).parent();
+                if ($(this).val() == '') {
+                    choiceBlock.next().remove();
+                    return;
+                }
+                else if (choiceBlock.next().length > 0) {
+                    //do nothing
+                    return;
+                }
+                var clone = choiceBlock.clone();
+                clone.find('input:text').val("");
+                choiceBlock.after(clone);
+            });
+
+            questionBlock.on('click','.remove-choice-btn',function (e) {
+                e.preventDefault();
+                $(this).parent('li').remove();
+            })
+        })(jQuery);
+
+        $('#searchAccountBtn').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "@Url.Action("SearchAccount","Activities")",
+                data: { email: $("#SearchUser").val() },
+                cache: false,
+                type: "POST",
+                success: function (data, textStatus, jqXHR) {
+                    if (!data.success) {
+                        alert(data.message);
+                    } else {
+                        var present = false;
+                        $('.account-ids').each(function () {
+                            if (this.value == data.accounts) {
+                                present = true;
+                                return false;
+                            };
+                        });
+                        $('.checkSingle').each(function () {
+                            if ($(this).is(':checked')) {
+                                if (this.value == data.accountDep) {
+                                    present = true;
+                                    return false;
+                                };
+                            };
+                        });
+                        if (present) {
+                            alert('您已經加過這個同仁，或者已經加了他的部門囉。');
+                            return;
+                        };
+                        $('#userFound').append("<li><input type='text' name='UserAccounts' value='" + data.accounts + "'class='account-ids' readonly='true' />" +
+                            "<input type='hidden' name='UserIds' value='" + data.hiddenId + "' class='hiddenIds' />" +
+                            "<input type='button' class='delete-account-btn' value='x' /></li>");
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseJSON.message);
+                }
+            });
+        });
+
+        $('#userFound').on('click', '.delete-account-btn', function () {
+            $(this).parents("li").remove();
+        });
+    </script>
+}

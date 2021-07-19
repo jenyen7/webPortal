@@ -1,0 +1,84 @@
+﻿@model EnterprisePortal.Models.VotingDepartmentsViewModel
+
+<div class="modal-header">
+    <h4 class="modal-title" id="myModalLabel">傳送對象</h4>
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+</div>
+
+@using (Html.BeginForm("SendGroup", "VotingContents"))
+{
+    <div class="modal-body">
+        <div class="card-header">
+            <h5>@Model.Voting.Title</h5>
+            <span style="font-size:14px">請確認好單位或同仁帳號，往後編輯時投票表單只可發送給尚未發送過的同仁，即投票表單一旦送出將無法收回，如需移除單位或帳號，請刪除此投票並重新建立。</span>
+        </div>
+        <div class="card-block">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="votingId" value="@Model.Voting.VotingId" />
+            <div class="form-group">
+                @Html.LabelFor(model => model.Voting.DepartmentsIds, htmlAttributes: new { @class = "control-label col-md-12 not-required", @style = "font-weight:bold" })
+                <div class="col-md-11">
+                    @if (Model.Voting.DepartmentsIds == null || string.IsNullOrEmpty(Model.Voting.DepartmentsIds))
+                    {
+                        <label class="customcheck">
+                            全選
+                            <input type="checkbox" id="checkedAll" />
+                            <span class="checkmark"></span>
+                        </label>
+                    }
+                    <div class="deps-container">
+                        @foreach (var item in Model.DepartmentViewModels)
+                        {
+                            if (item.IsChecked)
+                            {
+                                <label class="customcheck">
+                                    @item.DepName
+                                    @Html.CheckBoxFor(modelItem => item.IsChecked, new { Name = "Departments", value = item.DepValue, @class = "checkSingle", @disabled = "disabled" })
+                                    <span class="checkmark"></span>
+                                    <input type="hidden" name="Departments" value="@item.DepValue" />
+                                </label>
+                            }
+                            else
+                            {
+                                <label class="customcheck">
+                                    @item.DepName
+                                    @Html.CheckBoxFor(modelItem => item.IsChecked, new { Name = "Departments", value = item.DepValue, @class = "checkSingle" })
+                                    <span class="checkmark"></span>
+                                </label>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" style="position:relative">
+                @Html.LabelFor(model => model.Voting.ColleaguesIds, htmlAttributes: new { @class = "control-label col-md-12 not-required", @style = "font-weight:bold" })
+                <button type="button" class="ti-plus little-plus-btn" style="position: absolute; left: 110px; top: -2px;" id="searchAccountBtn" title="新增同仁"></button>
+                <div class="col-md-11">
+                    <input type="text" id="SearchUser" placeholder="Email搜尋" class="form-control" />
+                    <ul id="userFound">
+                        @{ string colleagues = Model.Voting.ColleaguesIds;
+                            if (colleagues != null)
+                            {
+                                if (!string.IsNullOrWhiteSpace(colleagues))
+                                {
+                                    string[] SelectedIndivUsers = colleagues.Split(',');
+                                    foreach (string user in SelectedIndivUsers)
+                                    {
+                                        <li>
+                                            <input type="text" name="UserAccounts" value="@user" class="account-ids" readonly />
+                                        </li>
+                                    }
+                                }
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">返回</button>
+        <button type="submit" id="confirmedBtn" class="btn btn-inverse">確定</button>
+    </div>
+}

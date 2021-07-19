@@ -1,0 +1,187 @@
+﻿@model EnterprisePortal.Models.UserAccount
+
+@{
+    string title = "使用者帳號";
+    string listName = title + "列表";
+    ViewBag.Title = "編輯" + title;
+}
+
+@section styles{
+    <style>
+        .roles_container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .myContainer {
+            display: flex;
+            flex-wrap: wrap-reverse;
+            margin-bottom: 30px;
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@title</h4>
+        <span>管理使用者帳號，包含協助重新設定密碼。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm("Edit", "UserAccounts", null, FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@ViewBag.Title</h5>
+                        <span>@System.Web.Configuration.WebConfigurationManager.AppSettings["subtitle"]</span>
+                    </div>
+                    <div class="card-block">
+                        <div class="col-md-8">
+                            @if (TempData["duplicateMsg"] != null)
+                            {<span style="color:red">@TempData["duplicateMsg"].ToString()</span>}
+                        </div>
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        @Html.HiddenFor(model => model.UserId)
+                        <div class="myContainer">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <div class="col-md-12">建議圖片 1:1 比例</div>
+                                    <div class="col-md-12">
+                                        <img id="user_img" style="width:100%" alt="profile_pic" />
+                                        <label class="btn btn-default" style="display:block; margin-top:5px">
+                                            上傳圖片
+                                            <input type="file" title="頭像" id="uploadImage" name="file" style="display:none" accept="image/jpg,image/png,image/jpeg,image/gif" />
+                                        </label>
+                                        @if (TempData["messageForAvatar"] != null)
+                                        {<span style="color:red">@TempData["messageForAvatar"].ToString()</span>}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.UserRoles, htmlAttributes: new { @class = "control-label col-md-12 not-required" })
+                                    <div class="col-md-12">
+                                        @Html.Action("RenderRolesCheckboxes", "UserAccounts", new { id = Model.UserId })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Account, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                    <div class="col-md-12">
+                                        @Html.EditorFor(model => model.Account, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                        @Html.ValidationMessageFor(model => model.Account, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                    <div class="col-md-12">
+                                        @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", @data_val = "false" } })
+                                        <input id="showPassword" type="checkbox" onclick="showPassword()"> 顯示密碼
+                                        @*@Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })*@
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-12">
+                                        @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                                        @if (TempData["messageForEmail"] != null)
+                                        {<span style="color:red">@TempData["messageForEmail"].ToString()</span>}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.PhoneNumber, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-12">
+                                        @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+                                        @if (TempData["messageForPhone"] != null)
+                                        {<span style="color:red">@TempData["messageForPhone"].ToString()</span>}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.DepId, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-12">
+                                        @Html.DropDownListFor(m => m.DepId, null, " ----- 請選擇部門 ----- ", new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.DepId, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-12">
+                                        @Html.LabelFor(model => model.IsEnable, htmlAttributes: new { @class = "control-label not-required" })
+                                        <label class="switch">
+                                            @Html.CheckBoxFor(model => model.IsEnable)
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group text-right">
+                    <a href="@Url.Action("Index")" class="previous-btn" id="backToListBtn">回列表</a>
+                    <input type="submit" value="儲存" class="btn btn-inverse" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+    let original_avatar = '@Model.Avatar.Substring(1)';
+        $('#user_img').attr('src', original_avatar);
+
+        $('#showPassword').click(function () {
+            var input = $('#Password');
+            if (input.attr('type') === 'password') {
+                input.attr('type', 'text')
+            } else {
+                input.attr('type', 'password')
+            }
+        });
+
+        $('#uploadImage').change(function () {
+            var ext = $(this).val().split('.').pop().toLowerCase();
+            if ($.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) == -1) {
+                alert('我們只接受GIF,PNG,JPG跟JPEG檔。');
+                this.value = '';
+                return false;
+            }
+            if ($(this)[0].files && $(this)[0].files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#user_img').attr('src', e.target.result);
+                }
+                reader.readAsDataURL($(this)[0].files[0]);
+            } else {
+                $('#user_img').attr('src', original_avatar);
+            }
+        });
+    </script>
+}

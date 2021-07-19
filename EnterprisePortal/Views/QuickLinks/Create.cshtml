@@ -1,0 +1,108 @@
+﻿@model EnterprisePortal.Models.QuickLink
+
+@{
+    string title = "常用連結";
+    string listName = title + "列表";
+    ViewBag.Title = "新增" + title;
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@title</h4>
+        <span>放置於登入頁面</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-10">
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@ViewBag.Title</h5>
+                        <span>@System.Web.Configuration.WebConfigurationManager.AppSettings["subtitle"]</span>
+                    </div>
+                    <div class="card-block">
+                        <div class="form-horizontal">
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                            <div class="form-group" style="position:relative">
+                                @Html.LabelFor(model => model.CategoryId, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <button type="button" class="ti-plus little-plus-btn" style="position: absolute; left: 85px; top: -2px;" id="createCategory" data-toggle="modal" data-target="#modalForCategory" title="新增分類"></button>
+                                <div class="col-md-11">
+                                    @Html.DropDownList("CategoryId", null, htmlAttributes: new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.CategoryId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.LinkName, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.LinkName, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.LinkName, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:50px">
+                                @Html.LabelFor(model => model.LinkUrl, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.LinkUrl, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.LinkUrl, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group text-right">
+                    <a href="@Url.Action("Index")" class="previous-btn" id="backToListBtn">回列表</a>
+                    <input type="submit" value="新增" class="btn btn-inverse" />
+                </div>
+            }
+            @Html.Partial("_CategoryCreateModalPartial")
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $('#createCategory').click(function (e) {
+            e.preventDefault();
+        });
+
+        $('#createConfirmed').click(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var category_name = $('#categoryName').val();
+            if (category_name == '') {
+                alert('您沒有輸入字喔');
+                return false;
+            }
+            $.post('@Url.Action("Create", "QuickLinksCategories")', { __RequestVerificationToken: token, LinkCatName: category_name }, function (data) {
+                if (!$.isNumeric(data)) {
+                    alert(data);
+                    return false;
+                }
+                $('#modalForCategory').modal('hide');
+                $('#CategoryId').append('<option value=' + data + '>' + category_name + '</option>');
+            });
+            $('#categoryName').val('');
+        });
+    </script>
+}

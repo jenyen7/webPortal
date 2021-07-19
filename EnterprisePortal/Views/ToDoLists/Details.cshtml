@@ -1,0 +1,64 @@
+﻿@model EnterprisePortal.Models.ToDoList
+
+@{
+    ViewBag.Title = "個人待辦事項";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@ViewBag.Title</h4>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        @{ string labelClass = "label label-lg ";
+                            switch ((int)Model.ListStatus)
+                            {
+                                case 0:
+                                    labelClass += "label-danger";
+                                    break;
+                                case 1:
+                                    labelClass += "label-warning";
+                                    break;
+                                case 2:
+                                    labelClass += "label-success";
+                                    break;
+                            }}
+                        <label class="@labelClass">
+                            @Model.ListStatus
+                        </label>
+                        <h5 class="card-header-text">@Html.DisplayFor(model => model.Title)</h5>
+                        @if (Model.EndTime != null)
+                        {
+                            <span>截止日期: @Model.EndTime</span>
+                        }
+                    </div>
+                    <div class="card-block">
+                        <textarea class="form-control" style="outline:none;border:none;background-color:transparent; min-height:400px" readonly>@Model.Summary</textarea>
+                    </div>
+                    <div class="col-md-3" style="margin: 30px auto">
+                        <a href="@Url.Action("HomePage","Login")" class="previous-btn" style="width:49%">回首頁</a>
+                        <a href="@Url.Action("Edit","ToDoLists",new { id = Model.ToDoListId })" class="btn btn-round btn-primary" style="width:49%">編輯</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,368 @@
+﻿@model EnterprisePortal.Models.Activity
+
+@{
+    string title = "活動";
+    string fullTitle = title + "報名系統";
+    string listName = title + "列表";
+    ViewBag.Title = "編輯" + title;
+}
+
+@section styles{
+    <style>
+        .my-icon-style {
+            margin-top: 10px;
+            margin-right: 20px;
+            border: none;
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+        <span>只有發起活動的同仁才可以看報名資料細項~</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@ViewBag.Title</h5>
+                        <span>@System.Web.Configuration.WebConfigurationManager.AppSettings["subtitle"]</span>
+                        <div class="card-header-right" style="background-color:transparent">
+                            <button type="button" id="previewBtn" class="btn btn-primary btn-outline-primary btn-icon my-icon-style" title="預覽畫面"><i class="icofont icofont-layout" style="margin:0;padding:0;font-size:20px"></i></button>
+                            <button type="button" id="applicationBtn" class="btn btn-primary btn-outline-primary btn-icon my-icon-style" title="投票狀況"><i class="icofont icofont-listine-dots" style="margin:0;padding:0;font-size:20px"></i></button>
+                            <button type="button" id="sendGroupBtn" class="btn btn-primary btn-outline-primary btn-icon my-icon-style" title="傳送對象"><i class="icofont icofont-sign-in" style="margin:0;padding:0;font-size:20px"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-block">
+                        <div class="form-horizontal">
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                            @Html.HiddenFor(model => model.ActivityId)
+                            <div class="col-md-8">
+                                @if (TempData["warningMsg"] != null)
+                                {<span style="color:red">@TempData["warningMsg"].ToString()</span>}
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ActivityType, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EnumDropDownListFor(model => model.ActivityType, "----- 請選擇活動類型 -----", htmlAttributes: new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.ActivityType, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.EndTime, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.EndTime, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.EndTime, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Summary, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                <div class="col-md-11">
+                                    <textarea class="ckeditor" name="editor">@Model.Summary</textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Picture, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                <div class="col-md-11">
+                                    <label class="btn btn-disabled">
+                                        <i class="ti-image"></i>上傳圖片
+                                        <input type="file" title="活動圖片" id="uploadImage" accept="image/jpg,image/png,image/jpeg,image/gif" style="display:none" />
+                                    </label>
+                                    <span class="text-muted">(如圖片需裁剪，請選取範圍並點擊"裁剪圖片"按鈕，如圖片已是建議的寬高度，則直接上傳即可。)</span>
+                                    <div>
+                                        建議寬度: 1000px、建議高度: 200px，約 5:1 比例
+                                        (目前圖片寬度: <label id="lblWidth"> </label>、
+                                        目前圖片高度: <label id="lblHeight"> </label>，
+                                        目前比例約 <label id="lblProportion"> </label>)
+                                    </div>
+                                    <div style="overflow:scroll">
+                                        <img id="imgPreview" alt="banner_img" style="width:100%" />
+                                    </div>
+                                    <div>
+                                        <div style="display:flex">
+                                            <button id="hlcropImage" class="btn btn-primary" style="font-weight:bold;width:50%"><i class="ti-cut"></i>裁剪圖片</button>
+                                            <button id="cancelImage" class="btn btn-default" style="font-weight:bold;width:50%"><i class="ti-close"></i>取消更換</button>
+                                        </div>
+                                        <canvas id="canvas" height="1" width="1"></canvas>
+                                    </div>
+                                    <input type="hidden" name="croppedImage" id="croppedImage" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-11">
+                                    @Html.LabelFor(model => model.ActivityStatus, htmlAttributes: new { @class = "control-label" })
+                                    <label class="switch">
+                                        @Html.CheckBoxFor(model => model.ActivityStatus)
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group text-right">
+                    <a href="@Url.Action("Index")" class="previous-btn" id="backToListBtn">回列表</a>
+                    <input type="submit" value="儲存" class="btn btn-inverse" />
+                </div>
+            }
+            <div class="modal fade" id="ListModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false">
+                <div class="modal-dialog modal-lg" style="max-width: 1000px">
+                    <div class="modal-content" id="applicationList">
+                        @Html.Action("ApplicationList", "Activities", new { id = Model.ActivityId })
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="sendGroupModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content" id="DepsList">
+                        @Html.Action("RenderRecipients", "Activities", new { id = Model.ActivityId })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/ckeditor/ckeditor.js"></script>
+    <script src="~/Scripts/ckfinder/ckfinder.js"></script>
+    <script src="~/Scripts/jquery.Jcrop.min.js"></script>
+    <script type="text/javascript">
+        CKEDITOR.replace('editor', { uiColor: '#1abc9c80' });
+
+        $('#previewBtn').click(function (e) {
+            e.preventDefault();
+            window.location.href = '@Url.Action("Details", "Activities", new { id = Model.ActivityId })';
+         });
+
+        $('#applicationBtn').click(function (e) {
+            e.preventDefault();
+            $('#ListModal').modal('show');
+        });
+
+        $('#sendGroupBtn').click(function (e) {
+            e.preventDefault();
+            $('#sendGroupModal').modal('show');
+        });
+
+        $('#searchAccountBtn').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "@Url.Action("SearchAccount","Activities")",
+                data: { email: $("#SearchUser").val() },
+                cache: false,
+                type: "POST",
+                success: function (data, textStatus, jqXHR) {
+                    if (!data.success) {
+                        alert(data.message);
+                    } else {
+                        var present = false;
+                        $('.accountIds').each(function () {
+                            if (this.value == data.accounts) {
+                                present = true;
+                                return false;
+                            };
+                        });
+                        $('.checkSingle').each(function () {
+                            if ($(this).is(':checked')) {
+                                if (this.value == data.accountDep) {
+                                    present = true;
+                                    return false;
+                                };
+                            };
+                        });
+                        if (present) {
+                            alert('您已經加過這個同仁，或者已經加了他的部門囉。');
+                            return;
+                        };
+                        $('#SearchUser').val('');
+                        $('#userFound').append("<li><input type='text' name='UserAccounts' value='" + data.accounts + "'class='account-ids' readonly='true' />" +
+                            "<input type='hidden' name='UserIds' value='" + data.hiddenId + "' class='hiddenIds' />" +
+                            "<input type='button' class='deleteAccountBtn' value='x' /></li>");
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseJSON.message);
+                }
+            });
+        });
+
+        $('#userFound').on('click', '.deleteAccountBtn', function () {
+            $(this).parent().remove();
+        });
+
+        //Jcrop
+        (function ($) {
+        let original_img = '@Model.Picture.Substring(1)';
+        var original_width = 0;
+        var original_height = 0;
+        var original_pro = 0;
+        $('#imgPreview').attr('src', original_img);
+        const origImage = new Image();
+        origImage.onload = function () {
+            original_width = this.width;
+            original_height = this.height;
+            original_pro = calculatePropos(this.width, this.height);
+            $("#lblWidth").text(original_width + "px");
+            $("#lblHeight").text(original_height + "px");
+            $("#lblProportion").text(original_pro + ":1");
+        }
+        origImage.src = original_img;
+
+        var imageCropWidth = 0;
+        var imageCropHeight = 0;
+        var cropPointX = 0;
+        var cropPointY = 0;
+        var jcropApi;
+
+        $('#uploadImage').change(function () {
+            var ext = $(this).val().split('.').pop().toLowerCase();
+            if ($.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) == -1) {
+                alert('我們只接受GIF,PNG,JPG跟JPEG檔。');
+                this.value = '';
+                return false;
+            }
+            readFile(this);
+        });
+
+        $("#hlcropImage").on("click", function (e) {
+            e.preventDefault();
+            cropImage();
+        });
+
+        function cropImage() {
+            if (imageCropWidth == 0 && imageCropHeight == 0) {
+                alert("請選取範圍。");
+                return;
+            }
+            //var img = $("#imgPreview").attr("src");
+            showCroppedImage();
+        }
+
+        function showCroppedImage() {
+            var x1 = cropPointX;
+            var y1 = cropPointY;
+            var width = imageCropWidth;
+            var height = imageCropHeight;
+            var canvas = $("#canvas")[0];
+            var context = canvas.getContext('2d');
+            var img = new Image();
+            img.onload = function () {
+                canvas.height = height;
+                canvas.width = width;
+                context.drawImage(img, x1, y1, width, height, 0, 0, width, height);
+                $('#croppedImage').val(canvas.toDataURL());
+            };
+            img.src = $('#imgPreview').attr("src");
+        }
+
+        function setCoordsAndImgSize(e) {
+            imageCropWidth = e.w;
+            imageCropHeight = e.h;
+            cropPointX = e.x;
+            cropPointY = e.y;
+            $("#lblWidth").text(imageCropWidth + "px");
+            $("#lblHeight").text(imageCropHeight + "px");
+            var value = calculatePropos(imageCropWidth, imageCropHeight);
+            if (!isNaN(value) && value !== Infinity) {
+                $("#lblProportion").text(value + ":1");
+            }
+        }
+
+        function initCrop() {
+            $('#imgPreview').Jcrop({
+                onChange: setCoordsAndImgSize,
+                onSelect: setCoordsAndImgSize,
+                aspectRatio: 0
+            }, function () { jcropApi = this });
+        }
+
+        function readFile(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                if (jcropApi != null) {
+                    jcropApi.destroy();
+                }
+                $("#imgPreview").removeAttr("style");
+                $("#canvas")[0].height = 0;
+                reader.onload = function (e) {
+                    var image = new Image();
+                    image.onload = function () {
+                        var proportion = calculatePropos(this.width, this.height);
+                        $("#lblWidth").text(this.width + "px");
+                        $("#lblHeight").text(this.height + "px");
+                        $("#lblProportion").text(proportion + ":1");
+                    }
+                    image.src = e.target.result;
+                    $('#imgPreview').attr('src', e.target.result);
+                    $('#croppedImage').val(e.target.result);
+                    initCrop();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+            //else {
+            //    jcropApi.destroy();
+            //    restoreOriginalImg();
+            //}
+        }
+
+        function restoreOriginalImg() {
+            $("#imgPreview").removeAttr('style').attr('src', original_img).attr('style', 'width:100%');
+            $("#lblWidth").text(original_width + "px");
+            $("#lblHeight").text(original_height + "px");
+            $("#lblProportion").text(original_pro + ":1");
+        }
+
+        $('#cancelImage').click(function (e) {
+            e.preventDefault();
+            jcropApi.destroy();
+            restoreOriginalImg();
+            $("#canvas")[0].height = 0;
+            $('#croppedImage').val('');
+        });
+
+        function calculatePropos(width, height) {
+            var value = width / height;
+            var result = (Math.round((value * 1000) / 10) / 100).toFixed(1);
+            return result;
+            };
+        })(jQuery);
+    </script>
+
+}

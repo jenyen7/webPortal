@@ -1,0 +1,313 @@
+﻿@model EnterprisePortal.Models.Activity
+
+@{
+    string title = "活動";
+    string fullTitle = title + "報名系統";
+    string listName = title + "列表";
+    ViewBag.Title = "新增" + title;
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+        <span>只有發起活動的同仁才可以看報名資料細項~</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm("Create", "Activities", null, FormMethod.Post, new { id = "activityForm" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@ViewBag.Title</h5>
+                        <span>@System.Web.Configuration.WebConfigurationManager.AppSettings["subtitle"]</span>
+                    </div>
+                    <div class="card-block">
+                        <div class="form-horizontal">
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ActivityType, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EnumDropDownListFor(model => model.ActivityType, "----- 請選擇活動類型 -----", htmlAttributes: new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.ActivityType, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.EndTime, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.EndTime, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.EndTime, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Summary, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                <div class="col-md-11">
+                                    @*@Html.EditorFor(model => model.Summary, new { htmlAttributes = new { @class = "ckeditor", id = "editor", Name = "editor" } })*@
+                                    <textarea class="ckeditor" id="editor" name="editor"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Picture, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                <div class="col-md-11">
+                                    <label class="btn btn-disabled">
+                                        <i class="ti-image"></i>上傳圖片
+                                        <input type="file" title="活動圖片" id="uploadImage" name="file" accept="image/jpg,image/png,image/jpeg,image/gif" style="display:none" />
+                                    </label>
+                                    <span class="text-muted">(如圖片需裁剪，請選取範圍並點擊"裁剪圖片"按鈕，如圖片已是建議的寬高度，則直接上傳即可。)</span>
+                                    <div>
+                                        建議寬度: 1000px、建議高度: 200px，約 5:1 比例
+                                        (目前圖片寬度: <label id="lblWidth"> </label>、
+                                        目前圖片高度: <label id="lblHeight"> </label>，
+                                        目前比例約 <label id="lblProportion"> </label>)
+                                    </div>
+                                    <div style="overflow:scroll">
+                                        <img id="imgPreview" src="~/Upload/Events/defaultBg.jpg" alt="banner_img" style="width:100%" />
+                                    </div>
+                                    <div>
+                                        <div style="display:flex">
+                                            <button id="hlcropImage" class="btn btn-primary" style="font-weight:bold;width:50%"><i class="ti-cut"></i>裁剪圖片</button>
+                                            <button id="cancelImage" class="btn btn-default" style="font-weight:bold;width:50%"><i class="ti-close"></i>取消上傳</button>
+                                        </div>
+                                        <canvas id="canvas" height="1" width="1"></canvas>
+                                    </div>
+                                    <input type="hidden" name="croppedImage" id="croppedImage" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group text-right">
+                    <a href="@Url.Action("Index")" class="previous-btn" id="backToListBtn">回列表</a>
+                    <input type="button" value="新增/ 傳送對象" class="btn btn-inverse" id="submitBtn" />
+                </div>
+            }
+            <div class="modal fade" id="sendGroupModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content" id="DepsList">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/ckeditor/ckeditor.js"></script>
+    <script src="~/Scripts/ckfinder/ckfinder.js"></script>
+    <script src="~/Scripts/jquery.Jcrop.min.js"></script>
+    <script type="text/javascript">
+        CKEDITOR.replace('editor', { uiColor: '#1abc9c80' });
+
+        $('#submitBtn').click(function (e) {
+            e.preventDefault();
+            var form = $('#activityForm');
+            if (!form.valid()) {
+                return false;
+            };
+            var formData = form.serialize();
+            var editorContent = CKEDITOR.instances.editor.getData();
+            var dataStr = formData.replace('editor=', 'editor=' + editorContent);
+            $.ajax({
+                url: '@Url.Action("Create", "Activities")',
+                type: 'POST',
+                cache: false,
+                data: dataStr,
+                success: function (data) {
+                    console.log(data);
+                    var url = '/Activities/RenderRecipients/' + data;
+                    $('#DepsList').load(url);
+                    $('#sendGroupModal').modal('show');
+                },
+                error: function () {alert('出了點問題。') }
+            });
+
+        });
+
+        $('#searchAccountBtn').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: '@Url.Action("SearchAccount","Activities")',
+                type: 'POST',
+                cache: false,
+                data: { email: $("#SearchUser").val() },
+                success: function (data) {
+                    if (!data.success) {
+                        alert(data.message);
+                    } else {
+                        var present = false;
+                        $('.hiddenIds').each(function () {
+                            if (this.value == data.hiddenId) {
+                                present = true;
+                                return false;
+                            };
+                        });
+                        $('.checkSingle').each(function () {
+                            if ($(this).is(':checked')) {
+                                if (this.value == data.accountDep) {
+                                    present = true;
+                                    return false;
+                                };
+                            };
+                        });
+                        if (present) {
+                            alert('您已經加過這個同仁，或者已經加了他的部門囉。');
+                            return;
+                        };
+                        $('#SearchUser').val('');
+                        $('#userFound').append("<li><input type='text' name='UserAccounts' value='" + data.accounts + "'class='account-ids' readonly='true' />" +
+                        "<input type='hidden' name='UserIds' value='" + data.hiddenId + "' class='hiddenIds' />" +
+                        "<input type='button' class='deleteAccountBtn' value='x' /></li>");
+                    }
+                }
+            });
+        });
+
+        $('#userFound').on('click', '.deleteAccountBtn', function () {
+            $(this).parent().remove();
+        });
+
+        //Jcrop
+        (function ($) {
+        var imageCropWidth = 0;
+        var imageCropHeight = 0;
+        var cropPointX = 0;
+        var cropPointY = 0;
+        var jcropApi;
+
+        $('#uploadImage').change(function () {
+            var ext = $(this).val().split('.').pop().toLowerCase();
+            if ($.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) == -1) {
+                alert('我們只接受GIF,PNG,JPG跟JPEG檔。');
+                this.value = '';
+                return false;
+            }
+            readFile(this);
+        });
+
+        $('#hlcropImage').on('click', function (e) {
+            e.preventDefault();
+            cropImage();
+        });
+
+        function cropImage() {
+            if (imageCropWidth == 0 && imageCropHeight == 0) {
+                alert("請選取範圍。");
+                return;
+            }
+            showCroppedImage();
+        }
+
+        function showCroppedImage() {
+            var x1 = cropPointX;
+            var y1 = cropPointY;
+            var width = imageCropWidth;
+            var height = imageCropHeight;
+            var canvas = $("#canvas")[0];
+            var context = canvas.getContext('2d');
+            var img = new Image();
+            img.onload = function () {
+                canvas.height = height;
+                canvas.width = width;
+                context.drawImage(img, x1, y1, width, height, 0, 0, width, height);
+                $('#croppedImage').val(canvas.toDataURL());
+            };
+            img.src = $('#imgPreview').attr("src");
+        }
+
+        function setCoordsAndImgSize(e) {
+            imageCropWidth = e.w;
+            imageCropHeight = e.h;
+            cropPointX = e.x;
+            cropPointY = e.y;
+            $("#lblWidth").text(imageCropWidth + "px");
+            $("#lblHeight").text(imageCropHeight + "px");
+            var value = calculatePropos(imageCropWidth, imageCropHeight);
+            if (!isNaN(value) && value !== Infinity) {
+                $("#lblProportion").text(value + ":1");
+            }
+        }
+
+        function initCrop() {
+            $('#imgPreview').Jcrop({
+                onChange: setCoordsAndImgSize,
+                onSelect: setCoordsAndImgSize,
+                aspectRatio: 0
+            }, function () { jcropApi = this });
+        }
+
+        function readFile(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                if (jcropApi != null) {
+                    jcropApi.destroy();
+                }
+                $('#imgPreview').removeAttr('style');
+                $("#canvas")[0].height = 0;
+                reader.onload = function (e) {
+                    var image = new Image();
+                    image.onload = function () {
+                        var proportion = calculatePropos(this.width, this.height);
+                        $("#lblWidth").text(this.width + "px");
+                        $("#lblHeight").text(this.height + "px");
+                        $("#lblProportion").text(proportion + ":1");
+                    }
+                    var uploadedImage = e.target.result;
+                    image.src = uploadedImage;
+                    $('#imgPreview').attr('src', uploadedImage);
+                    $('#croppedImage').val(uploadedImage);
+                    initCrop();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        $('#cancelImage').click(function (e) {
+            e.preventDefault();
+            jcropApi.destroy();
+            $('#imgPreview').removeAttr('style').attr('src', '/Upload/Events/defaultBg.jpg').attr('style','width:100%');
+            $("#lblWidth").text('');
+            $("#lblHeight").text('');
+            $("#lblProportion").text('');
+            $('#croppedImage').val('');
+            $("#canvas")[0].height = 0;
+        });
+
+        function calculatePropos(width, height) {
+            var value = width / height;
+            var result = (Math.round((value * 1000) / 10) / 100).toFixed(1);
+            return result;
+            };
+        })(jQuery);
+    </script>
+}

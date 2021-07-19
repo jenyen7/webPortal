@@ -1,0 +1,103 @@
+﻿@model IEnumerable<EnterprisePortal.Models.Message>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string title = "訊息";
+    string listName = title + "列表";
+    ViewBag.Title = title + "內容";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@title</h4>
+        <span>一個問與答的空間。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/jquery.signalR-2.4.2.min.js"></script>
+    <script src="signalr/js"></script>
+    <script>
+        (function () {
+            var chat = $.connection.chathub;
+            //broadcast
+            chat.client.showmessage = function (name, message) {
+                $("#welcome-messages").append("<span style='font-weight:bold'>" + name + "</span>: " + message +
+                    "<br />");
+            };
+            chat.client.announce = function (message) {
+                writeToPage(message);
+            };
+            var writeToPage = function (message) {
+                $("#welcome-messages").append(message + "<br />");
+            };
+
+            //group
+            chat.client.sendMsgBack = function (message, character) {
+                $("#welcome-messages2").append("<span style='font-weight:bold'>" + character + ": " + message +
+                    "</span><br />");
+            };
+            chat.client.notify = function (message) {
+                writeToPage2(message);
+            };
+            chat.client.welcomeMsg = function (message) {
+                writeToPage2(message);
+            };
+            var writeToPage2 = function (message) {
+                $("#welcome-messages2").append(message + "<br />");
+            };
+            var groupId;
+            var whoIam;
+            $.connection.hub.start()
+                .done(function () {
+                    whoIam = prompt("請表明身分:", 0);
+                    groupId = prompt("想加入的對話視窗:", 5);
+                    chat.server.join(groupId);
+                    chat.server.notify("對方上線了。", groupId);
+                    chat.server.welcome("歡迎您來到" + groupId + "號房。");
+                })
+                .fail(function () {
+                    writeToPage("連線失敗。");
+                });
+            $.connection.hub.connectionSlow(function () {
+                writeToPage("連線不穩..");
+            });
+
+            $("#click-me").on("click", function () {
+                chat.server.broadcast($("#textName").val(), $("#textMsg").val());
+                chat.server.getServerDateTime()
+                    .done(function (data) {
+                        writeToPage(data);
+                        $('#textMsg').val('');
+                    })
+                    .fail(function (e) {
+                        writeToPage(e)
+                    })
+            });
+            $("#click-me2").on("click", function () {
+                chat.server.sendMsg($('#textMsg2').val(), whoIam, groupId)
+                    .done(function () {
+                        $('#textMsg2').val('');
+                    })
+                    .fail(function (e) {
+                        writeToPage2(e)
+                    })
+            })
+        })()
+    </script>
+}

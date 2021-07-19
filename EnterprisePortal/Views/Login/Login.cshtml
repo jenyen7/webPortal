@@ -1,0 +1,104 @@
+﻿@model EnterprisePortal.Models.LoginHomeViewModel
+@using EnterprisePortal.Utils
+@{
+    Layout = "~/Views/Login/_LayoutLogin.cshtml";
+}
+
+@section head
+{
+    <title>登入</title>
+    <style>
+        .error {
+            color: red;
+        }
+    </style>
+    <script src="https://www.google.com/recaptcha/api.js"></script>
+}
+
+@using (Html.BeginForm("Login", "Login", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form", id = "loginForm" }))
+{
+    <h3 class="mb-4">登入</h3>
+    @Html.AntiForgeryToken()
+    <div class="input-group mb-3">
+        @Html.TextBoxFor(m => m.Account, new { @class = "form-control", placeholder = "帳號或Email", Name = "account" })
+    </div>
+    <div class="input-group mb-4">
+        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "密碼", Name = "password" })
+    </div>
+    <div class="form-group text-left">
+        @*@Html.GoogleCaptcha()*@
+        <div class="g-recaptcha" data-sitekey="@System.Web.Configuration.WebConfigurationManager.AppSettings["reCaptcha_key"]"></div>
+        <input type="hidden" class="hiddenRecaptcha required" name="hiddenRecaptcha" id="hiddenRecaptcha">
+        @Html.InvalidGoogleCaptchaLabel("您沒有通過reCaptcha驗證。")
+    </div>
+    <div class="form-group text-left">
+        <div class="checkbox checkbox-fill d-inline">
+            <div>
+                <input type="checkbox" name="checkbox-fill-1" id="checkbox-fill-a1" checked="">
+                <label for="checkbox-fill-a1" class="cr">@Html.LabelFor(m => m.RememberMe)</label>
+            </div>
+            <p class="text-muted text-right" style="margin-top:-30px">@Html.ActionLink("忘記密碼?", "ForgotPassword")</p>
+        </div>
+    </div>
+
+    <div class="text-center">
+        @if (TempData["error"] != null)
+        {<span style="color:red">@TempData["error"].ToString()</span>}
+    </div>
+    <input type="submit" class="btn btn-primary shadow-2 mb-4" value="登入" />
+}
+
+@section scripts{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $("#loginForm").validate({
+            ignore: ".ignore",
+            rules: {
+                account: {
+                    required: true
+                },
+                password: {
+                    required: true,
+                    minlength: 5
+                },
+                //passwordConfirm: {
+                //    required: true,
+                //    minlength: 5,
+                //    equalTo: "#password"
+                //}
+                hiddenRecaptcha: {
+                    required: function () {
+                        if (grecaptcha.getResponse() == '') {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+            },
+            messages: {
+                account: {
+                    required: "帳號必填"
+                },
+                password: {
+                    required: "密碼必填",
+                    minlength: "密碼至少要5位數"
+                },
+                hiddenRecaptcha: {
+                    required: "請通過reCaptcha驗證。"
+                }
+            },
+            errorElement: "div",
+            errorClass: "text-danger text-left",
+            errorPlacement: function (error, element) {
+                if (element.is(":text") || element.is(":password")) {
+                    element.parents('div.input-group').after(error);
+                }
+                else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+    </script>
+
+}

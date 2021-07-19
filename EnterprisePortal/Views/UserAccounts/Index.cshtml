@@ -1,0 +1,118 @@
+﻿@model IEnumerable<EnterprisePortal.Models.UserAccount>
+
+@{
+    string title = "使用者帳號";
+    string listName = title + "列表";
+    ViewBag.Title = title;
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@title</h4>
+        <span>管理使用者帳號，包含協助重新設定密碼。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@listName</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>@listName</h5>
+                    <button type="button" class="ti-plus little-plus-btn" id="createBtn" title="新增帳號"></button>
+                    <span>如果員工離職，優先關閉其帳號存取，不建議直接刪除帳號。</span>
+                </div>
+                <div class="card-block">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Department.DepartmentName)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Account)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.PhoneNumber)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Email)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Avatar)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.UserRoles)
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Department.DepartmentName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Account)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.PhoneNumber)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Email)
+                                        </td>
+                                        <td>
+                                            <img src="@Url.Content(item.Avatar)" alt="profile_picture" height="40" width="40" style="border-radius:50%" />
+                                        </td>
+                                        <td style="max-width:160px; display:flex; flex-wrap:wrap">
+                                            @foreach (var role in item.UserRoles)
+                                            {
+                                                <label class="label label-default" style="margin-bottom:5px;">@role.Role.RoleTitle</label>
+                                            }
+                                        </td>
+                                        <td>
+                                            @Html.ActionLink(" ", "Edit", new { id = item.UserId }, new { @class = "edit-delete-btn ti-pencil-alt", @title = "編輯" })
+                                            @Html.ActionLink(" ", "Delete", new { id = item.UserId }, new { @class = "edit-delete-btn ti-trash delete", @data_toggle = "modal", @data_target = "#myModal", @data_id = item.UserId, @title = "刪除" })
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <input type="hidden" id="itemid" value="" />
+                        @Html.AntiForgeryToken()
+                        @Html.Partial("_ModalDeletePartial")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script>
+        const config = {
+            "order": [],
+            language: chineseVersion
+        };
+        $('#table').dataTable(config);
+
+        $('.dataTables_filter').find('input[type=search]').attr('placeholder', '依關鍵字搜尋').attr('style', 'outline:none;border:0.5px solid;padding:5px 10px');
+    </script>
+}

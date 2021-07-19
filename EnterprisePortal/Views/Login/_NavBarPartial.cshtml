@@ -1,0 +1,31 @@
+﻿@model EnterprisePortal.Models.NavBarViewModel
+
+@foreach (var item in Model.QuickLinksCategory)
+{
+    if (item.QuickLinks.Any())
+    {
+        <li class="nav-item pl-4 pl-md-0 ml-0 ml-md-4">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@item.LinkCatName</a>
+            <div class="dropdown-menu">
+                @foreach (var link in item.QuickLinks)
+                {
+                    <a class="dropdown-item" href="@link.LinkUrl" target="_blank">@link.LinkName</a>
+                }
+            </div>
+        </li>
+    }
+}
+
+<li style="margin:5px 0 0 20px">
+    <a style="color:white;background-color:#3498DB;padding:5px 20px;border-radius:20px" href="~/Login/Login">登入</a>
+</li>
+
+@*<li class="nav-item pl-4 pl-md-0 ml-0 ml-md-4">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Category 2</a>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+            <a class="dropdown-item" href="#">Another action</a>
+        </div>
+    </li>*@

@@ -1,0 +1,403 @@
+﻿@model EnterprisePortal.Models.ActivitiesApplication
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "活動報名";
+}
+
+@section styles{
+    <style>
+        .my-title-style {
+            padding: 5px 10px;
+            color: white;
+            text-shadow: #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px;
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@ViewBag.Title</h4>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="cover-profile">
+                <div class="profile-bg-img">
+                    <img class="profile-bg-img img-fluid" src="@Model.Activity.Picture.Substring(1)" alt="bg-img" style="max-height:200px">
+                    <div class="card-block user-info">
+                        <div class="col-md-12">
+                            <div class="media-body row">
+                                <div class="col-lg-12">
+                                    <div class="user-title my-title-style">
+                                        <h2 style="font-weight:900">@Model.Activity.Title</h2>
+                                        <span style="font-weight:bold">
+                                            報名截止日: @Model.Activity.EndTime.ToString("yyyy/MM/dd")
+                                            @{ if (Model.Activity.EndTime < DateTime.Now)
+                                                {
+                                                    <span>(已結束)</span>
+                                                }
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="pull-right cover-btn">
+                                        <button type="button" class="btn btn-primary m-r-10 m-b-5" id="refuse_btn"><i class="icofont icofont-close-squared-alt"></i> 婉拒參加</button>
+                                        <button type="button" class="btn btn-primary m-b-5"><i class="icofont icofont-ui-messaging"></i> 聯繫主辦人</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="tab-content">
+                <div class="tab-pane active" id="personal" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-header-text">@Html.DisplayNameFor(model => model.Activity.Summary)</h5>
+                                    <div class="card-header-right">
+                                        <i class="icofont icofont-rounded-down"></i>
+                                    </div>
+                                </div>
+                                <div class="card-block user-desc">
+                                    <div class="view-desc">
+                                        @{ if (!string.IsNullOrWhiteSpace(Model.Activity.Summary))
+                                            {
+                                                @Html.Raw(Model.Activity.Summary);
+                                            }
+                                            else
+                                            {
+                                                <p>此活動無詳細內容。</p>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        @{
+                            string appsStatus;
+                            string name = "";
+                            string email = "";
+                            string citizenId = "";
+                            string cellNum = "";
+                            if ((int)Model.ListStatus == 2)
+                            {
+                                if (Model.IsJoiningIn)
+                                {
+                                    appsStatus = "已報名";
+                                    name = Model.Name;
+                                    email = Model.Email;
+                                    citizenId = Model.CitizenId;
+                                    cellNum = Model.CellNumber;
+                                }
+                                else
+                                {
+                                    appsStatus = "已婉拒";
+                                }
+
+                            }
+                            else
+                            {
+                                appsStatus = "尚未報名";
+                            }
+                        }
+                        <h5 class="card-header-text">@ViewBag.Title</h5><label class="label label-info">@appsStatus</label>
+                        <div class="text-muted" style="font-size:14px">請確認資料填寫無誤，一旦提交將無法編輯，如有填錯資料，請聯繫主辦者開啟編輯權限。</div>
+                        <button id="edit-btn" type="button" class="btn btn-sm btn-primary waves-effect waves-light f-right">
+                            <i class="icofont icofont-edit"></i>
+                        </button>
+                    </div>
+                    <div class="card-block">
+                        <div class="view-info">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="general-info">
+                                        <div class="row">
+                                            <div class="col-lg-12 col-xl-6">
+                                                <table class="table m-0 table-responsive">
+                                                    <tbody>
+                                                        <tr>
+                                                            <th scope="row">@Html.DisplayNameFor(model => model.Name)</th>
+                                                            <td>@name</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">@Html.DisplayNameFor(model => model.Email)</th>
+                                                            <td>@email</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">@Html.DisplayNameFor(model => model.IsAccompanied)</th>
+                                                            @{if (Model.IsAccompanied)
+                                                                {
+                                                                    <td>有</td>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <td>沒有</td>
+                                                                }
+                                                            }
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">@Html.DisplayNameFor(model => model.PeopleNum)</th>
+                                                            @{if (Model.PeopleNum == 0)
+                                                                {
+                                                                    <td></td>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <td>@Model.PeopleNum</td>
+                                                                }
+                                                            }
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="col-lg-12 col-xl-6">
+                                                <table class="table table-responsive">
+                                                    <tbody>
+                                                        @{ int activityType = (int)Model.Activity.ActivityType;
+                                                            if (activityType == 1 || activityType == 2)
+                                                            {
+                                                                <tr>
+                                                                    <th scope="row">@Html.DisplayNameFor(model => model.CitizenId)</th>
+                                                                    <td>@citizenId</td>
+                                                                </tr>
+                                                            } }
+                                                        <tr>
+                                                            <th scope="row">@Html.DisplayNameFor(model => model.CellNumber)</th>
+                                                            <td>@cellNum</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">@Html.DisplayNameFor(model => model.IsVegetarian)</th>
+                                                            @{if (Model.IsVegetarian)
+                                                                {
+                                                                    <td>有</td>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <td>沒有</td>
+                                                                }
+                                                            }
+                                                        </tr>
+                                                        <tr>
+                                                            <th scope="row">@Html.DisplayNameFor(model => model.Transportation)</th>
+                                                            @{if (Model.Transportation == 0)
+                                                                {
+                                                                    <td></td>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <td>@Model.Transportation</td>
+                                                                }
+                                                            }
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="edit-info">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="general-info">
+                                        @using (Html.BeginForm("ApplicationForm", "Activities", FormMethod.Post, new { id = "appsForm" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <div class="row">
+                                                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                                                @Html.HiddenFor(model => model.ActivityId)
+                                                @Html.HiddenFor(model => model.ApplicationId)
+                                                <div class="col-lg-6">
+                                                    <table class="table">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <span class="input-group-addon"><i class="icofont icofont-user"></i></span>
+                                                                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", placeholder = "名字", @Value = name } })
+                                                                    </div>
+                                                                    @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <span class="input-group-addon"><i class="icofont icofont-ui-email"></i></span>
+                                                                        @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", placeholder = "電子郵件", @Value = email } })
+                                                                    </div>
+                                                                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <div class="checkbox">
+                                                                            <label class="switch">
+                                                                                @Html.CheckBoxFor(model => model.IsAccompanied, new { @id = "family_btn" })
+                                                                                <span class="slider"></span>
+                                                                                <span style="padding-left:30px">@Html.DisplayNameFor(model => model.IsAccompanied)</span>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <span class="input-group-addon"><i class="icofont icofont-people"></i></span>
+                                                                        @Html.EditorFor(model => model.PeopleNum, new { htmlAttributes = new { @class = "form-control", @id = "family_num", placeholder = "陪同人數", @value = "0", @readonly = "readonly" } })
+                                                                    </div>
+                                                                    @Html.ValidationMessageFor(model => model.PeopleNum, "", new { @class = "text-danger" })
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <div class="col-lg-6">
+                                                    <table class="table">
+                                                        <tbody>
+                                                            @{if (activityType == 1 || activityType == 2)
+                                                                {
+                                                                    <tr>
+                                                                        <td>
+                                                                            <div class="input-group">
+                                                                                <span class="input-group-addon"><i class="icofont icofont-ui-v-card"></i></span>
+                                                                                @Html.EditorFor(model => model.CitizenId, new { htmlAttributes = new { @class = "form-control", placeholder = "身分證字號", @Value = citizenId } })
+                                                                            </div>
+                                                                            @Html.ValidationMessageFor(model => model.CitizenId, "", new { @class = "text-danger" })
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                            <tr>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <span class="input-group-addon"><i class="icofont icofont-ui-touch-phone"></i></span>
+                                                                        @Html.EditorFor(model => model.CellNumber, new { htmlAttributes = new { @class = "form-control", placeholder = "手機號碼", @Value = cellNum } })
+                                                                    </div>
+                                                                    @Html.ValidationMessageFor(model => model.CellNumber, "", new { @class = "text-danger" })
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <label class="switch">
+                                                                            @Html.CheckBoxFor(model => model.IsVegetarian)
+                                                                            <span class="slider"></span>
+                                                                            <span style="padding-left:30px">@Html.DisplayNameFor(model => model.IsVegetarian)</span>
+                                                                        </label>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        @Html.EnumDropDownListFor(model => model.Transportation, " ----- 請選擇交通方式 ----- ", htmlAttributes: new { @class = "form-control" })
+                                                                    </div>
+                                                                    @Html.ValidationMessageFor(model => model.Transportation, "", new { @class = "text-danger" })
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="text-center">
+                                                <button class="btn btn-default" id="edit-cancel">取消</button>
+                                                <button class="btn btn-primary" type="submit" id="save_btn" data_toggle="modal" data_target="#InfoModal">儲存</button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (TempData["modalTitle"] != null)
+        {
+            @Html.Partial("_ModalInfoPartial")
+        }
+    </div>
+</div>
+
+@section Scripts{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="../../assets/pages/user-profile.js"></script>
+    <script type="text/javascript">
+        $('#infoModal').modal('show');
+        $('.view-desc').find('img').attr('style', 'width:100%');
+
+        function disableEditBtn() {
+            var isFilled = '@Model.ListStatus';
+            var endDate = '@Model.Activity.EndTime.ToString("yyyy/MM/dd")';
+            var arrdt = endDate.split("/");
+            if (isFilled=='已完成' || new Date(arrdt[0], arrdt[1]-1, arrdt[2]) <= new Date()) {
+                $('#edit-btn').attr('disabled', 'disabled');
+                $('#refuse_btn').attr('disabled', 'disabled');
+            };
+        };
+        disableEditBtn();
+
+        if ($('#family_btn').is(':checked')) {
+            $('#family_num').removeAttr('readonly');
+        };
+
+        $('#family_btn').click(function () {
+            var input = $('#family_num');
+            if (input.attr('readonly') == 'readonly') {
+                input.removeAttr('readonly')
+            } else {
+                input.attr('readonly', true)
+            }
+        });
+
+        $('#refuse_btn').click(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var id = $('#ApplicationId').val();
+            $.post('@Url.Action("ApplicationRefused", "Activities")', { __RequestVerificationToken: token, appsId: id }, function (data) {
+                window.location.assign(data);
+            });
+        });
+
+        $('#save_btn').click(function () {
+            if ($('#family_btn').is(':checked') && $('#family_num').val() == 0) {
+                alert('如有勾選親人陪同，請填寫陪同人數。');
+                return false;
+            }
+        });
+
+        $('#edit-cancel').click(function (e) {
+            e.preventDefault();
+        });
+    </script>
+}

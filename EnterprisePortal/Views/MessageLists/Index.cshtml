@@ -1,0 +1,128 @@
+﻿@model IEnumerable<EnterprisePortal.Models.MessageList>
+
+@{
+    string title = "訊息";
+    string listName = title + "列表";
+    ViewBag.Title = title;
+}
+
+@section styles{
+    <style>
+        .dialog-container {
+            border: 1px solid black;
+        }
+
+        .dialog-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 10px;
+        }
+
+        .time-box {
+            position: relative;
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@title</h4>
+        <span>一個問與答的空間。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@listName</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>@listName</h5>
+                    <span>對方可能不會即時回應，請耐心等候。</span>
+                </div>
+                <div class="card-block">
+                    @if (TempData["message"] != null)
+                    {<span style="color:red">@TempData["message"].ToString()</span>}
+                    <div class="table-responsive">
+                        <table class="table" id="table">
+                            <thead>
+                                <tr>
+                                    <th style="width:70%">訊息標題</th>
+                                    <th style="width:30%">回應時間</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr class="dialog-container">
+                                        @if (item.ActivityId != null)
+                                        {
+                                            var lastMessage = item.Messages.OrderByDescending(o => o.Time).FirstOrDefault();
+                                            <td class="dialog-box">
+                                                <div>
+                                                    <img src="@item.Activity.Picture.Substring(1)" alt="picture" style="width:100%" />
+                                                </div>
+                                                <div>
+                                                    <div>
+                                                        @Html.DisplayFor(modelItem => item.Activity.Title)
+                                                    </div>
+                                                    <div>
+                                                        @lastMessage.Text
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="time-box">
+                                                <div>
+                                                    @lastMessage.Time.ToString("MM-dd hh:mm")
+                                                </div>
+                                                <div style="position:absolute; bottom:0">
+                                                    @Html.ActionLink(" ", "Delete", new { id = item.MessageListId }, new { @class = "edit-delete-btn ti-trash delete", @data_toggle = "modal", @data_target = "#myModal", @data_id = item.MessageListId, @title = "刪除" })
+                                                </div>
+                                            </td>
+
+                                        }
+                                        else
+                                        {
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.Voting.Title)
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <input type="hidden" id="itemid" value="" />
+                        @Html.AntiForgeryToken()
+                        @Html.Partial("_ModalDeletePartial")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script>
+        const config = {
+            "order": [],
+            language: chineseVersion
+        };
+        $('#table').dataTable(config);
+
+        $('.dataTables_filter').find('input[type=search]').attr('placeholder', '依關鍵字搜尋').attr('style', 'outline:none;border:0.5px solid;padding:5px 10px');
+    </script>
+}

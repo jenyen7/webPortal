@@ -1,0 +1,131 @@
+﻿@model IEnumerable<EnterprisePortal.Models.ActivitiesApplication>
+
+<div class="modal-header">
+    <h4 class="modal-title" id="myModalLabel">報名列表</h4>
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+</div>
+
+@{
+    if (Model.Any())
+    {
+        <div class="modal-body" style="max-height:600px; overflow-y:auto">
+            <div class="card-header">
+                <h5>@Model.First().Activity.Title</h5>
+                <span>
+                    這裡只顯示前50筆，如要詳細資訊請下載Excel。
+                    <a id="downloadBtn" href="@Url.Action("ExportExcel","Activities", new { id = Model.First().ActivityId })">匯出Excel (共 @ViewBag.Total 筆)</a>
+                </span>
+            </div>
+            <div class="card-block table-border-style">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="formsList">
+                        <thead>
+                            <tr style="cursor:pointer">
+                                <th>
+                                    @Html.DisplayNameFor(model => model.UserAccount.Department.DepartmentName)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.UserAccount.Account)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ListStatus)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.IsJoiningIn)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Name)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Email)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.CellNumber)
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.UserAccount.Department.DepartmentName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.UserAccount.Account)
+                                    </td>
+                                    <td>
+                                        @if ((int)item.ListStatus == 2)
+                                        {
+                                            <label class="label label-success">已完成</label>
+                                        }
+                                        else
+                                        {
+                                            <label class="label label-warning">尚未填寫</label>
+                                        }
+                                    </td>
+                                    @{
+                                        string isParticipating = "";
+                                        string className = "";
+                                        string name = "";
+                                        string email = "";
+                                        string cellNum = "";
+
+                                        if ((int)item.ListStatus == 2)
+                                        {
+                                            if (item.IsJoiningIn)
+                                            {
+                                                isParticipating = "參加";
+                                                className = "label label-inverse-success";
+                                                name = item.Name;
+                                                email = item.Email;
+                                                cellNum = item.CellNumber;
+                                            }
+                                            else
+                                            {
+                                                isParticipating = "婉拒";
+                                                className = "label label-inverse-danger";
+                                            }
+                                        }
+                                    }
+                                    <td>
+                                        <label class="@className">@isParticipating</label>
+                                    </td>
+                                    <td>@name</td>
+                                    <td>@email</td>
+                                    <td>@cellNum</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="modal-body">
+            <p>此活動沒有發出任何報名表。</p>
+        </div>
+    }
+}
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="cursor:pointer">關閉</button>
+</div>
+
+<script src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+<script>
+    $('#formsList').dataTable({
+        "info": false,
+        "paging": false,
+        "searching": false,
+        "order": [],
+        language: {
+            processing: "處理中...",
+            search: "",
+            loadingRecords: "載入中...",
+            emptyTable: "此列表無紀錄。",
+        }
+    });
+</script>

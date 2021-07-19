@@ -1,0 +1,111 @@
+﻿@model IEnumerable<EnterprisePortal.Models.RolePermission>
+
+@{
+    string title = "權限";
+    string listName = title + "列表";
+    ViewBag.Title = title;
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@title</h4>
+        <span>權限管理</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@listName</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>@listName</h5>
+                    <button type="button" class="ti-plus little-plus-btn" id="createBtn" title="新增權限"></button>
+                    <span>如果刪除權限，擁有該權限的角色之相對應權限也會一併消失。</span>
+                </div>
+                <div class="card-block">
+                    @if (TempData["message"] != null)
+                    {<span style="color:red">@TempData["message"].ToString()</span>}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Permission.PermissionName)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.PermissionName)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.PValue)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Icon)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Url)
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Permission.PermissionName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.PermissionName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.PValue)
+                                        </td>
+                                        <td>
+                                            <i class="@item.Icon"></i>
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Url)
+                                        </td>
+                                        <td>
+                                            @Html.ActionLink(" ", "Edit", new { id = item.PermissionId }, new { @class = "edit-delete-btn ti-pencil-alt", @title = "編輯" })
+                                            @Html.ActionLink(" ", "Delete", new { id = item.PermissionId }, new { @class = "edit-delete-btn ti-trash delete", @data_toggle = "modal", @data_target = "#myModal", @data_id = item.PermissionId, @title = "刪除" })
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <input type="hidden" id="itemid" value="" />
+                        @Html.AntiForgeryToken()
+                        @Html.Partial("_ModalDeletePartial")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script>
+        const config = {
+            "order": [],
+            language: chineseVersion
+        };
+        $('#table').dataTable(config);
+
+        $('.dataTables_filter').find('input[type=search]').attr('placeholder', '依關鍵字搜尋').attr('style', 'outline:none;border:0.5px solid;padding:5px 10px');
+    </script>
+}

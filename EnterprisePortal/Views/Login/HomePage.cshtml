@@ -1,0 +1,317 @@
+﻿@model EnterprisePortal.Models.HomePageViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "首頁";
+}
+
+@section styles{
+    <style>
+        th {
+            cursor: pointer;
+        }
+
+        .blink {
+            animation: blinker 2s linear infinite;
+        }
+
+        @@keyframes blinker {
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@ViewBag.Title</h4>
+        <span>公告、個人待辦事項、活動報名及投票</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card card-contact borderless-card" style="height:440px">
+                <div class="widget-profile-card-1">
+                    <div class="bg-layer"></div>
+                    <img class="img-fluid" src="../../assets/images/slider7.jpg" alt="card-style-1">
+                    <div class="middle-user">
+                        <img class="img-fluid" src="@Model.Settings.Avatar" alt="Profile-user">
+                    </div>
+                </div>
+                <div class="card-block text-center p-10">
+                    <h5>@Model.Settings.Account</h5>
+                    <p class="text-muted">@Model.Settings.Email</p>
+                    <a class="btn btn-info btn-round" href="@Url.Action("Settings", "Login")">編輯</a>
+                </div>
+                <div class="card-footer">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <p class="text-primary" style="font-size:18px">@Model.Settings.JoinedDate</p>
+                            <span class="text-muted">加入</span>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-primary" style="font-size:18px">@Model.Settings.Department</p>
+                            <span class="text-muted">隸屬部門</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>公告</h5>
+                    <span>最新公告</span>
+                </div>
+                <div class="card-block">
+                    <div class="table-responsive">
+                        <table class="table" id="table_announcements">
+                            <thead>
+                                <tr>
+                                    <th style="width:70%">
+                                        @Html.DisplayNameFor(model => model.Announcements.Single().Title)
+                                    </th>
+                                    <th style="width:30%">
+                                        @Html.DisplayNameFor(model => model.Announcements.Single().PublishedDate)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Announcements != null)
+                                {
+                                    foreach (var item in Model.Announcements)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (item.IsPublic)
+                                                {
+                                                    <label class="label label-md label-default">全域</label>
+                                                    <label class="label label-md" style="background-color:@item.Department.DepartmentColor">@item.Department.DepartmentName.Substring(0, 2)</label>
+                                                }
+                                                else
+                                                {
+                                                    <label class="label label-md label-inverse">部門</label>
+                                                }
+                                                <a href="@Url.Action("Details","Announcements",new { id = item.AnnouncementId})">@item.Title</a>
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PublishedDate)
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>個人待辦事項、活動報名以及投票</h5>
+                    <span>
+                        <i class="icofont icofont-flag" style="color:red"></i> 尚未處理/今天到期
+                        <i class="icofont icofont-flag" style="color:black"></i> 尚未處理/已逾期
+                    </span>
+                </div>
+                <div class="card-block">
+                    <div class="table-responsive">
+                        <table class="table" id="table_toDoLists">
+                            <thead>
+                                <tr>
+                                    <th style="width:50%">
+                                        @Html.DisplayNameFor(model => model.AllLists.Single().Title)
+                                    </th>
+                                    <th style="width:15%">
+                                        @Html.DisplayNameFor(model => model.AllLists.Single().ListStatus)
+                                    </th>
+                                    <th style="width:15%">
+                                        @Html.DisplayNameFor(model => model.AllLists.Single().EndTime)
+                                    </th>
+                                    <th style="width:20%">
+                                        @Html.DisplayNameFor(model => model.AllLists.Single().PublishedDate)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.AllLists != null)
+                                {
+                                    foreach (var item in Model.AllLists)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @{ switch ((int)item.ListType)
+                                                    {
+                                                        case 1:<label class="label label-md label-info">個人</label>
+                                                            <a href="@Url.Action("Details","ToDoLists",new { id = item.Id})">@item.Title</a>
+                                                            break;
+                                                        case 2:<label class="label label-md label-success">活動</label>
+                                                            <a href="@Url.Action("ApplicationForm","Activities",new { id = item.Id})">@item.Title</a>
+                                                            break;
+                                                        case 3:<label class="label label-md label-warning">投票</label>
+                                                            <a href="@Url.Action("VotingForm","Votings",new { id = item.Id})">@item.Title</a>
+                                                            break;
+                                                    }
+                                                    if (!string.IsNullOrEmpty(item.EndTime.ToString()))
+                                                    {
+                                                        bool notDone = item.ListStatus == 0 || (int)item.ListStatus == 1;
+                                                        int time = DateTime.Compare(Convert.ToDateTime(item.EndTime), DateTime.UtcNow.Date);
+                                                        if (time == 0 && notDone)
+                                                        {
+                                                            <i class="icofont icofont-flag blink" style="color:red"></i>
+                                                        }
+                                                        else if (time < 0 && notDone)
+                                                        {
+                                                            <i class="icofont icofont-flag"></i>
+                                                        }
+                                                    }
+                                                }
+                                            </td>
+                                            <td>
+                                                @{ string labelClass = "label label-md ";
+                                                    switch ((int)item.ListStatus)
+                                                    {
+                                                        case 0:
+                                                            labelClass += "label-inverse-danger";
+                                                            break;
+                                                        case 1:
+                                                            labelClass += "label-inverse-warning";
+                                                            break;
+                                                        case 2:
+                                                            labelClass += "label-inverse-success";
+                                                            break;
+                                                    }}
+                                                <label class="@labelClass">
+                                                    @Html.DisplayFor(modelItem => item.ListStatus)
+                                                </label>
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.EndTime)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PublishedDate)
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (Model.Activity != null)
+        {
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>您發起的活動紀錄</h5>
+                        <span>目前最新的活動</span>
+                    </div>
+                    <div class="card-block">
+                        <div style="display:flex; justify-content:space-evenly">
+                            <div>
+                                <img width="50" height="50" style="border-radius:50%" src="@Model.Activity.Picture.Substring(1)" alt="pic">
+                            </div>
+                            <div>
+                                <h6>@Model.Activity.Title</h6>
+                                <p class="text-muted">@Model.Activity.EndTime.ToString("yyyy-MM-dd") 截止</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-round btn-info" id="application_btn">瀏覽報名狀況</button>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="application_listModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false">
+                            <div class="modal-dialog modal-lg" style="max-width: 1000px">
+                                <div class="modal-content" id="application_list">
+                                    @Html.Action("ApplicationList", "Activities", new { id = Model.Activity.ActivityId })
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="activityId" value="@Model.Activity.ActivityId" />
+                    </div>
+                </div>
+            </div>
+        }
+        @if (Model.Voting != null)
+        {
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>您發起的投票紀錄</h5>
+                        <span>目前最新的投票</span>
+                    </div>
+                    <div class="card-block">
+                        <div style="display:flex; justify-content:space-evenly">
+                            <div>
+                                <img width="50" height="50" style="border-radius:50%" src="@Model.Voting.Picture.Substring(1)" alt="pic">
+                            </div>
+                            <div>
+                                <h6>@Model.Voting.Title</h6>
+                                <p class="text-muted">@Model.Voting.EndTime.ToString("yyyy-MM-dd") 截止</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-round btn-info" id="votes_btn">瀏覽投票狀況</button>
+                            </div>
+                        </div>
+                        <div class="modal fade" id="votingforms_listModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false">
+                            <div class="modal-dialog modal-lg" style="max-width: 700px">
+                                <div class="modal-content" id="votingforms_list">
+                                    @Html.Action("VotesList", "Votings", new { id = Model.Voting.VotingId })
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="votingId" value="@Model.Voting.VotingId" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@Html.Partial("_ModalInputPartial")
+
+@section Scripts {
+    <link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script>
+        $('#application_btn').click(function () {
+            $('#application_listModal').modal('show');
+        });
+
+        $('#votes_btn').click(function () {
+            $('#votingforms_listModal').modal('show');
+        });
+
+        const config1 = {
+            "info": false,
+            "pageLength": 5,
+            "scrollX": false,
+            "order": [],
+            language: chineseVersion
+        };
+        const config2 = {
+            "pagingType": "full_numbers",
+            "scrollX": false,
+            "order": [],
+            language: chineseVersion
+        };
+        $('#table_announcements').dataTable(config1);
+        $('#table_toDoLists').dataTable(config2);
+
+        $('.dataTables_filter').find('input[type=search]').attr('placeholder', '依關鍵字搜尋').attr('style', 'outline:none;border:0.5px solid;padding:5px 10px');
+        $('#table_announcements_length').find('label').hide();
+    </script>
+}

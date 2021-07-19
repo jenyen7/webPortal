@@ -1,0 +1,100 @@
+﻿@model IEnumerable<EnterprisePortal.Models.UserLog>
+
+@{
+    string title = "使用者紀錄";
+    string listName = title + "列表";
+    ViewBag.Title = title;
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@title</h4>
+        <span>僅供瀏覽使用者紀錄(新增、修改、刪除及登入紀錄)</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@listName</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>@listName</h5>
+                    <span>僅顯示前500筆的異動，如需查詢更早的使用者紀錄請至資料庫。</span>
+                </div>
+                <div class="card-block">
+                    <div class="table-responsive">
+                        <table class="table" id="table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.UserAccount.Account)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Action)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Area)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.TheId)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Time)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.UserAccount.Account)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Action)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Area)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.TheId)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Time)
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script>
+        const config = {
+            "order": [],
+            language: chineseVersion
+        };
+        $('#table').dataTable(config);
+
+        $('.dataTables_filter').find('input[type=search]').attr('placeholder', '依關鍵字搜尋').attr('style', 'outline:none;border:0.5px solid;padding:5px 10px');
+    </script>
+}

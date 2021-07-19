@@ -1,0 +1,161 @@
+﻿@model EnterprisePortal.Models.Voting
+
+@{
+    string title = "投票";
+    string fullTitle = title + "系統";
+    string listName = title + "列表";
+    ViewBag.Title = "新增" + title;
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+        <span>收集大家意見的地方。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@ViewBag.Title</h5>
+                        <span>@System.Web.Configuration.WebConfigurationManager.AppSettings["subtitle"]</span>
+                    </div>
+                    <div class="card-block">
+                        <div class="form-horizontal">
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ActivityType, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EnumDropDownListFor(model => model.ActivityType, "----- 請選擇投票主題類型 -----", htmlAttributes: new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.ActivityType, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.EndTime, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.EndTime, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.EndTime, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Summary, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                <div class="col-md-11">
+                                    <textarea class="ckeditor" name="editor"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Picture, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                <div class="col-md-11">
+                                    <div>
+                                        <img id="uploaded_image" src="~/Upload/Events/defaultBg.jpg" style="width:100%" alt="banner_img">
+                                        <input type="hidden" id="cropped_image" name="croppedImage" />
+                                    </div>
+                                    <label class="custom-file btn btn-primary">
+                                        <i class="ti-image"></i>上傳圖片
+                                        <input type="file" accept="image/*" style="display:none" id="cover_image">
+                                    </label>
+                                    <button class="btn btn-default" id="cancel_image"><i class="ti-close"></i>取消上傳</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group text-right">
+                    <a href="@Url.Action("Index", "Votings")" class="previous-btn" id="backToListBtn">回列表</a>
+                    <input type="submit" value="下一步" class="btn btn-inverse" />
+                </div>
+            }
+            @Html.Partial("_CroppieModalPartial")
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <link href="~/Scripts/Croppie-2.6.5/croppie.css" rel="stylesheet" />
+    <script src="~/Scripts/Croppie-2.6.5/croppie.min.js"></script>
+    <script src="~/Scripts/ckeditor/ckeditor.js"></script>
+    <script src="~/Scripts/ckfinder/ckfinder.js"></script>
+    <script type="text/javascript">
+        CKEDITOR.replace('editor', { uiColor: '#1abc9c80' });
+
+        const image_crop = $('#image_demo').croppie({
+            viewport: {
+                width: 1000,
+                height: 200,
+                type: 'square'
+            },
+            boundary: {
+                width: 1100,
+                height: 300
+            }
+        });
+
+        $('#cover_image').on('change', function () {
+            var ext = $(this).val().split('.').pop().toLowerCase();
+            if ($.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) == -1) {
+                alert('我們只接受GIF,PNG,JPG跟JPEG檔。');
+                this.value = '';
+                return false;
+            };
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                image_crop.croppie('bind', {
+                    url: e.target.result,
+                });
+            }
+            reader.readAsDataURL(this.files[0]);
+            $('#uploadimageModal').modal('show');
+        });
+
+        $('.crop_image').click(function () {
+            image_crop.croppie('result', {
+                type: 'canvas'
+            }).then(function (src) {
+                $("#cropped_image").val(src);
+                $("#uploaded_image").attr('src', src);
+            });
+            $('#uploadimageModal').modal('hide');
+        });
+
+        $('#cancel_image').click(function (e) {
+            e.preventDefault();
+            $('#cover_image').val('');
+            $('#uploaded_image').attr('src', '/Upload/Events/defaultBg.jpg');
+        });
+    </script>
+}

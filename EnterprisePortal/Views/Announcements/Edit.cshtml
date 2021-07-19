@@ -1,0 +1,94 @@
+﻿@model EnterprisePortal.Models.Announcement
+
+@{
+    string title = "公告";
+    string fullTitle = title + "系統";
+    string listName = title + "列表";
+    ViewBag.Title = "編輯" + title;
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+        <span>公告可發給自己部門或者全體部門。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@ViewBag.Title</h5>
+                        <span>@System.Web.Configuration.WebConfigurationManager.AppSettings["subtitle"]</span>
+                    </div>
+                    <div class="card-block">
+                        <div class="form-horizontal">
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                            @Html.HiddenFor(model => model.AnnouncementId)
+
+                            <div class="form-group">
+                                <div class="col-md-11">
+                                    @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label not-required" })
+                                    <label class="switch">
+                                        @Html.CheckBoxFor(model => model.IsPublic)
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:30px">
+                                @Html.LabelFor(model => model.AnnouncementContent, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    <textarea class="ckeditor" name="editor">@Model.AnnouncementContent</textarea>
+                                    @*@Html.EditorFor(model => model.AnnouncementContent, new { htmlAttributes = new { @class = "form-control", style = "height:300px" } })*@
+                                    @*@Html.ValidationMessageFor(model => model.AnnouncementContent, "", new { @class = "text-danger" })*@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group text-right">
+                    <a href="@Url.Action("Index")" class="previous-btn" id="backToListBtn">回列表</a>
+                    <input type="submit" value="儲存" class="btn btn-inverse" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Scripts/ckeditor/ckeditor.js"></script>
+    <script src="~/Scripts/ckfinder/ckfinder.js"></script>
+    <script>
+        // CKEDITOR.config.customConfig = '/Scripts/ckeditor/config.js';
+        CKEDITOR.replace('editor');
+    </script>
+}

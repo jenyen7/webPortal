@@ -1,0 +1,216 @@
+﻿@model IEnumerable<EnterprisePortal.Models.ToDoList>
+@using PagedList.Mvc;
+@using PagedList;
+
+@{
+    string title = "待辦事項";
+    string listName = title + "列表";
+    ViewBag.Title = title;
+}
+
+@section styles{
+    <style>
+        .search-input-style {
+            height: 32px;
+            margin-bottom: 10px;
+        }
+
+            .search-input-style:focus {
+                outline: none;
+                border-color: #0073AA;
+            }
+
+        .search-date {
+            color: transparent;
+        }
+
+            .search-date::before {
+                color: grey;
+                content: attr(placeholder);
+            }
+
+        .table-title-style {
+            color: black;
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@title</h4>
+        <span>個人待辦事項</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@listName</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>@listName</h5>
+                    <button type="button" class="ti-plus little-plus-btn" id="createBtn" title="新增待辦事項"></button>
+                    <span>
+                        依日期篩選時，起迄時間需一起填入。
+                        <i class="icofont icofont-flag" style="color:red"></i> 尚未處理/今天到期
+                        <i class="icofont icofont-flag" style="color:black"></i> 尚未處理/已逾期
+                    </span>
+                </div>
+                <div class="card-block">
+                    <div>
+                        @using (Html.BeginForm("Index", "ToDoLists", FormMethod.Get))
+                        {
+                            <input type="text" name="searchString" value="@ViewBag.SearchString" placeholder="依標題搜尋" class="col-sm-2 search-input-style" />
+                            @Html.DropDownListFor(model => model.FirstOrDefault().ListStatus, (SelectList)ViewBag.Status, new { @class = "col-md-1 search-input-style", Name = "filterStatus" })
+                            <input type="date" name="endTimeStart" value="@ViewBag.EndTimeStart" placeholder="截止日期起" class="col-sm-2 search-date search-input-style" id="endStart" />
+                            <input type="date" name="endTimeEnd" value="@ViewBag.EndTimeEnd" placeholder="截止日期迄" class="col-sm-2 search-date search-input-style" id="endEnd" />
+                            <input type="date" name="publishedDateStart" value="@ViewBag.PublishedStart" placeholder="發佈日期起" class="col-sm-2 search-date search-input-style" id="pubStart" />
+                            <input type="date" name="publishedDateEnd" value="@ViewBag.PublishedEnd" placeholder="發佈日期迄" class="col-sm-2 search-date search-input-style" id="pubEnd" />
+                            <button type="submit" class="ti-search little-plus-btn" title="搜尋"></button>
+                            <button type="button" class="ti-close little-plus-btn" id="removeFilterBtn" title="解除搜尋/排序"></button>
+                        }
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Title)
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("狀態", "Index", new { sortOrder = ViewBag.StatusSortParm, currentFilter = ViewBag.CurrentFilter }, new { @class = "table-title-style" })
+                                        <i class="icofont icofont-sort" style="color:lightgray"></i>
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("截止日", "Index", new { sortOrder = ViewBag.EndTimeSortParm, currentFilter = ViewBag.CurrentFilter }, new { @class = "table-title-style" })
+                                        <i class="icofont icofont-sort" style="color:lightgray"></i>
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("發佈日期", "Index", new { sortOrder = ViewBag.PublishedDateSortParm, currentFilter = ViewBag.CurrentFilter }, new { @class = "table-title-style" })
+                                        <i class="icofont icofont-sort" style="color:lightgray"></i>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Title)
+                                            &nbsp;
+                                            @{ if (!string.IsNullOrEmpty(item.EndTime.ToString()))
+                                                {
+                                                    bool notDone = item.ListStatus == 0 || (int)item.ListStatus == 1;
+                                                    int time = DateTime.Compare(Convert.ToDateTime(item.EndTime), DateTime.UtcNow.Date);
+                                                    if (time < 0 && notDone)
+                                                    {
+                                                        <i class="icofont icofont-flag"></i>
+                                                    }
+                                                    else if (time == 0 && notDone)
+                                                    {
+                                                        <i class="icofont icofont-flag blink" style="color:red"></i>
+                                                    }
+                                                }
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @{ string labelClass = "label label-md ";
+                                                switch ((int)item.ListStatus)
+                                                {
+                                                    case 0:
+                                                        labelClass += "label-inverse-danger";
+                                                        break;
+                                                    case 1:
+                                                        labelClass += "label-inverse-warning";
+                                                        break;
+                                                    case 2:
+                                                        labelClass += "label-inverse-success";
+                                                        break;
+                                                }}
+                                            <label class="@labelClass">
+                                                @Html.DisplayFor(modelItem => item.ListStatus)
+                                            </label>
+                                        </td>
+
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.EndTime, "{0:yyyy-MM-dd}")
+                                        </td>
+
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.PublishedDate, "{0:yyyy-MM-dd}")
+                                        </td>
+
+                                        <td>
+                                            @Html.ActionLink(" ", "Edit", new { id = item.ToDoListId }, new { @class = "edit-delete-btn ti-pencil-alt", @title = "編輯" })
+                                            @Html.ActionLink(" ", "Delete", new { id = item.ToDoListId }, new { @class = "edit-delete-btn ti-trash delete", @data_toggle = "modal", @data_target = "#myModal", @data_id = item.ToDoListId, @title = "刪除" })
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <input type="hidden" id="itemid" value="" />
+                        @Html.AntiForgeryToken()
+                    </div>
+                </div>
+                <div class="card-block">
+                    @Html.PagedListPager((IPagedList)Model, page => Url.Action("Index", new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }),
+                    new PagedListRenderOptions
+                    {
+                        DisplayLinkToIndividualPages = true,
+                        DisplayPageCountAndCurrentLocation = false,
+                        MaximumPageNumbersToDisplay = 10,
+                        //LiElementClasses = new string[] { "page-item" }
+                    })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@Html.Partial("_ModalDeletePartial")
+
+@section Scripts {
+    <link href="~/Content/PagedList.css" rel="stylesheet" />
+    <script>
+        (function blink() {
+            $('.blink').fadeOut(800).fadeIn(800, blink);
+        })();
+
+        function verifyInputDateHasValue() {
+            if ($('#endStart').val() != "") {
+                $('#endStart').removeClass('search-date');
+            }
+            if ($('#endEnd').val() != "") {
+                $('#endEnd').removeClass('search-date');
+            }
+            if ($('#pubStart').val() != "") {
+                $('#pubStart').removeClass('search-date');
+            }
+            if ($('#pubEnd').val() != "") {
+                $('#pubEnd').removeClass('search-date');
+            }
+        }
+        verifyInputDateHasValue();
+
+        $('input[type="date"]').change(function () {
+            $(this).removeClass('search-date');
+        });
+
+        $('#removeFilterBtn').click(function (e) {
+            e.preventDefault();
+            window.location.href = '@Url.Action("Index")';
+        });
+    </script>
+}

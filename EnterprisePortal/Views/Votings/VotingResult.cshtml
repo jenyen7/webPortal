@@ -1,0 +1,228 @@
+﻿@model EnterprisePortal.Models.VotingResultViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string title = "投票";
+    string fullTitle = title + "系統";
+    string listName = title + "列表";
+    string subList = "編輯" + title;
+    ViewBag.Title = title + "結果";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+        <span>收集大家意見的地方。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index","Votings")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Edit","Votings",new { id=Model.Voting.VotingId})">@subList</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        @if (Model.Voting.VotingContents.Select(s => s.VotingResults.Any()).Contains(true))
+        {
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@Model.Voting.Title</h5>
+                        <span>下載記名統計數據。<a href="@Url.Action("ExportExcel","Votings", new { id=Model.Voting.VotingId})">匯出Excel</a></span>
+                    </div>
+                    <div class="card-block">
+                        <div class="col-md-8">
+                            @if (TempData["warningMsg"] != null)
+                            {<span style="color:red">@TempData["warningMsg"].ToString()</span>}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            int count = 0;
+            int id = 0;
+            string namingIds = "";
+            foreach (var item in Model.Voting.VotingContents)
+            {
+                if (item.VoteNum != count)
+                {
+                    count = item.VoteNum;
+                    id++;
+                    namingIds = "myChart" + id;
+                    if (item.IsMultipleChoices)
+                    {
+                        <div class="col-md-10">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>第 @item.VoteNum 題</h5>
+                                    <span style="font-size:16px">@item.VoteText</span>
+                                    <div class="card-header-right">
+                                        <i class="icofont icofont-rounded-down"></i>
+                                    </div>
+                                </div>
+                                <div class="card-block">
+                                    <canvas id="@namingIds" style="width:100%"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-10">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>第 @item.VoteNum 題</h5>
+                                    <span style="font-size:16px">@item.VoteText</span>
+                                    <div class="card-header-right">
+                                        <i class="icofont icofont-rounded-down"></i>
+                                    </div>
+                                </div>
+                                <div class="card-block">
+                                    <canvas id="@namingIds" style="width:100%"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            }
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>其他意見區</h5>
+                        <span>如需查詢留言者，請下載Excel。</span>
+                        <div class="card-header-right">
+                            <i class="icofont icofont-rounded-down"></i>
+                        </div>
+                    </div>
+                    <div class="card-block">
+                        @foreach (var vote in Model.Voting.VotingForms)
+                        {
+                            if ((int)vote.ListStatus == 2)
+                            {
+                                if (!string.IsNullOrWhiteSpace(vote.Comments))
+                                {
+                                    <div style="background-color:#F6F6F7; margin:10px;padding:20px 10px;">@vote.Comments</div>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@Model.Voting.Title</h5>
+                        <span>...</span>
+                    </div>
+                    <div class="card-block">
+                        <p>目前無人投票。</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<p>
+    <button type="button" class="btn btn-inverse" id="editBtn"><i class="icofont icofont-edit"></i>返回編輯</button>
+    <button type="button" class="btn btn-default" id="downloadBtn" data_toggle="modal" data_target="#inputModal"><i class="icofont icofont-download-alt"></i>下載結果</button>
+</p>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript">
+        if ($('div.card-block').find('p').text() == '目前無人投票。') {
+            $('#downloadBtn').attr('disabled', 'true');
+        }
+
+        $('#editBtn').click(function () {
+            window.location.href = '@Url.Action("Edit", "Votings", new { id = Model.Voting.VotingId })';
+        });
+
+        $('#downloadBtn').click(function () {
+            window.location.href = '@Url.Action("ExportExcel","Votings", new { id=Model.Voting.VotingId})';
+        });
+
+        const bgcolor = [
+            'rgba(255, 99, 132, 0.5)',
+            'rgba(255, 159, 64, 0.5)',
+            'rgba(255, 205, 86, 0.5)',
+            'rgba(75, 192, 192, 0.5)',
+            'rgba(54, 162, 235, 0.5)',
+            'rgba(153, 102, 255, 0.5)',
+            'rgba(201, 203, 207, 0.5)',
+            'rgba(119, 115, 181, 0.5)',
+            'rgba(44, 89, 170, 0.5)',
+            'rgba(36, 27, 118, 0.5)',
+            'rgba(53, 200, 184, 0.5)',
+            'rgba(226, 229, 80, 0.5)'
+        ];
+        const bordercolor = [
+            'rgb(255, 99, 132)',
+            'rgb(255, 159, 64)',
+            'rgb(255, 205, 86)',
+            'rgb(75, 192, 192)',
+            'rgb(54, 162, 235)',
+            'rgb(153, 102, 255)',
+            'rgb(201, 203, 207)',
+            'rgb(119, 115, 181)',
+            'rgb(44, 89, 170)',
+            'rgb(36, 27, 118)',
+            'rgb(53, 200, 184)',
+            'rgb(226, 229, 80)'
+        ];
+
+        const object = JSON.parse('@Html.Raw(Json.Encode(Model.Results))');
+        const count = object.length;
+
+        function populateChart(obj, countId) {
+            var chartId = 'myChart' + countId;
+            var chart = document.getElementById(chartId);
+            var chartType = obj.ChartType;
+            var question = obj.QuestionText;
+            var labels = obj.Label;
+            var numbers = obj.Data;
+
+            var data = {
+                labels: labels,
+                datasets: [{
+                    label: question,
+                    data: numbers,
+                    backgroundColor: bgcolor,
+                    borderColor: bordercolor,
+                    hoverOffset: 5,
+                    borderWidth: 1
+                }]
+            };
+
+            var config = {
+                type: chartType,
+                data: data,
+                options: {
+                    radius: '70%'
+                },
+            };
+            new Chart(chart, config);
+        }
+
+        for (var i = 0; i < count; i++) {
+            populateChart(object[i], i+1);
+        }
+    </script>
+}

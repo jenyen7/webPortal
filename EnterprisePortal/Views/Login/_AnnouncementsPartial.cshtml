@@ -1,0 +1,21 @@
+﻿@model IEnumerable<EnterprisePortal.Models.AnnouncementViewModel>
+
+<ul class="show-notification">
+    <li>
+        <h6>公告</h6>
+        <label class="label label-danger">New</label>
+    </li>
+    @foreach (var item in Model)
+    {
+        <li>
+            <div class="media">
+                <span class="department-label" style="background-color:@item.DepartmentColor">@item.DepartmentName.Substring(0, 1)</span>
+                <div class="media-body" style="margin-left:20px">
+                    <h5 class="notification-user">@item.DepartmentName</h5>
+                    <p class="notification-msg">@item.AnnouncementTitle</p>
+                    <span class="notification-time">@item.TimeAgo</span>
+                </div>
+            </div>
+        </li>
+    }
+</ul>

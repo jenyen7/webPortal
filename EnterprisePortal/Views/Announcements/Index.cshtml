@@ -1,0 +1,173 @@
+﻿@model IEnumerable<EnterprisePortal.Models.Announcement>
+@using PagedList.Mvc;
+@using PagedList;
+
+@{
+    string title = "公告";
+    string fullTitle = title + "系統";
+    string listName = title + "列表";
+    ViewBag.Title = fullTitle;
+}
+
+@section styles{
+    <style>
+        .search-input-style {
+            height: 32px;
+            margin-bottom: 10px;
+        }
+
+            .search-input-style:focus {
+                outline: none;
+                border-color: #0073AA;
+            }
+
+        .search-date {
+            color: transparent;
+        }
+
+            .search-date::before {
+                color: grey;
+                content: attr(placeholder);
+            }
+
+        .table-title-style {
+            color: black;
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+        <span>公告可發給自己部門或者全體部門。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@listName</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>@listName</h5>
+                    <button type="button" class="ti-plus little-plus-btn" id="createBtn" title="新增公告"></button>
+                    <span>
+                        依日期篩選時，起迄時間需一起填入。
+                        <a href="@Url.Action("ExportExcel","Announcements")" style="padding-left:10px">匯出公告紀錄</a>
+                    </span>
+                </div>
+                <div class="card-block">
+                    <div>
+                        @using (Html.BeginForm("Index", "Announcements", FormMethod.Get))
+                        {
+                            @Html.DropDownListFor(model => model.FirstOrDefault().IsPublic, (SelectList)ViewBag.PublicStatus, new { @class = "col-sm-2 search-input-style", Name = "filterStatus" })
+                            <input type="text" name="searchString" value="@ViewBag.SearchString" placeholder="依公告標題搜尋" class="col-sm-3 search-input-style" />
+                            <input type="date" name="publishedDateStart" value="@ViewBag.PublishedStart" placeholder="公告發佈日期起" class="col-sm-3 search-date search-input-style" id="pubStart" />
+                            <input type="date" name="publishedDateEnd" value="@ViewBag.PublishedEnd" placeholder="公告發佈日期迄" class="col-sm-3 search-date search-input-style" id="pubEnd" />
+                            <button type="submit" class="ti-search little-plus-btn" title="搜尋"></button>
+                            <button type="button" class="ti-close little-plus-btn" id="removeFilterBtn" title="解除搜尋/排序"></button>
+                        }
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        公告類別
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Title)
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("發佈日期", "Index", new { sortOrder = ViewBag.PublishedDateSortParm, currentFilter = ViewBag.CurrentFilter }, new { @class = "table-title-style" })
+                                        <i class="icofont icofont-sort" style="color:lightgray"></i>
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("瀏覽次數", "Index", new { sortOrder = ViewBag.ViewsSortParm, currentFilter = ViewBag.CurrentFilter }, new { @class = "table-title-style" })
+                                        <i class="icofont icofont-sort" style="color:lightgray"></i>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        @if (item.IsPublic)
+                                        {
+                                            <td><label class="label label-md label-default">全域</label></td>
+                                        }
+                                        else
+                                        {
+                                            <td><label class="label label-md label-inverse">部門</label></td>
+                                        }
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Title)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.PublishedDate)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.ViewNum)
+                                        </td>
+                                        <td>
+                                            @Html.ActionLink(" ", "Edit", new { id = item.AnnouncementId }, new { @class = "edit-delete-btn ti-pencil-alt", @title = "編輯" })
+                                            @Html.ActionLink(" ", "Delete", new { id = item.AnnouncementId }, new { @class = "edit-delete-btn ti-trash delete", @data_toggle = "modal", @data_target = "#myModal", @data_id = item.AnnouncementId, @title = "刪除" })
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <input type="hidden" id="itemid" value="" />
+                        @Html.AntiForgeryToken()
+                    </div>
+                </div>
+                <div class="card-block">
+                    @Html.PagedListPager((IPagedList)Model, page => Url.Action("Index", new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }),
+                        new PagedListRenderOptions
+                        {
+                            DisplayLinkToIndividualPages = true,
+                            DisplayPageCountAndCurrentLocation = false,
+                            MaximumPageNumbersToDisplay = 10
+                        })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@Html.Partial("_ModalDeletePartial")
+
+@section Scripts {
+    <link href="~/Content/PagedList.css" rel="stylesheet" />
+    <script>
+       function verifyInputDateHasValue() {
+            if ($('#pubStart').val() != "") {
+                $('#pubStart').removeClass('search-date');
+            }
+            if ($('#pubEnd').val() != "") {
+                $('#pubEnd').removeClass('search-date');
+            }
+        }
+        verifyInputDateHasValue();
+
+        $('input[type="date"]').change(function () {
+            $(this).removeClass('search-date');
+        });
+
+        $('#removeFilterBtn').click(function (e) {
+            e.preventDefault();
+            window.location.href = '@Url.Action("Index")';
+        });
+    </script>
+}

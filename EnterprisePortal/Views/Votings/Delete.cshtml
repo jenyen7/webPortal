@@ -1,0 +1,88 @@
+﻿@model EnterprisePortal.Models.Voting
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Voting</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.VotingTitle)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VotingTitle)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.VotingSummary)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VotingSummary)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.VotingStatus)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VotingStatus)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EndTime)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EndTime)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Picture)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Picture)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.UserId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DepartmentsIds)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DepartmentsIds)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ColleaguesIds)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ColleaguesIds)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

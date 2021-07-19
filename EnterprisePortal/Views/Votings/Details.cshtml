@@ -1,0 +1,317 @@
+﻿@model EnterprisePortal.Models.Voting
+
+@{
+    string title = "投票";
+    string fullTitle = title + "系統";
+    string listName = title + "列表";
+    string subList = "編輯" + title;
+    ViewBag.Title = "預覽" + title + "畫面";
+}
+
+@section styles{
+    <style>
+        .my-title-style {
+            /* background-color: rgba(255, 255, 255,0.7);
+            border-radius: 5px;*/
+            padding: 5px 10px;
+            color: white;
+            text-shadow: #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px, #000 0px 0px 1px;
+        }
+
+        .question-block {
+            margin-left: 30px;
+        }
+
+        .title-block {
+            margin-top: 30px;
+            font-weight: bold;
+            color: #0073AA;
+        }
+
+        .choice-block {
+            margin: 10px 20px;
+            word-break: break-word;
+        }
+
+        .input-container {
+            display: inline-block;
+            position: relative;
+            padding-left: 50px;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+            .input-container input {
+                opacity: 0;
+            }
+
+            .input-container:hover input ~ .vote-checkmark {
+                background-color: #CCC;
+            }
+
+            .input-container input:checked ~ .vote-checkmark {
+                background-color: #0073AA;
+            }
+
+        .vote-checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #D3D3D3;
+        }
+
+        /*checkbox style*/
+        .checkbox-style {
+        }
+
+        .ck-checkmark {
+            height: 20px;
+            width: 20px;
+            border-radius: 3px;
+        }
+
+            .ck-checkmark:after {
+                content: "";
+                position: absolute;
+                display: none;
+            }
+
+        .input-container input:checked ~ .ck-checkmark:after {
+            display: block;
+        }
+
+        .checkbox-style .ck-checkmark:after {
+            left: 8px;
+            top: 4px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            -webkit-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            transform: rotate(45deg);
+        }
+
+        /*radio-button style*/
+        .radiobtn-style {
+        }
+
+        .rb-checkmark {
+            height: 21px;
+            width: 21px;
+            border-radius: 50%;
+            transition: all 0.3s ease-out;
+        }
+
+            .rb-checkmark:after {
+                content: "";
+                position: absolute;
+                display: none;
+                transform: scale(0);
+            }
+
+        .input-container input:checked ~ .rb-checkmark:after {
+            display: block;
+            transform: scale(1);
+        }
+
+        .radiobtn-style .rb-checkmark:after {
+            top: 2px;
+            left: 2px;
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            border: 3px solid white;
+            background: #0073AA;
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+        <span>收集大家意見的地方。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Edit",new { id=Model.VotingId})">@subList</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="cover-profile">
+                <div class="profile-bg-img">
+                    <img class="profile-bg-img img-fluid" src="@Model.Picture.Substring(1)" alt="bg-img" style="max-height:200px">
+                    <div class="card-block user-info">
+                        <div class="col-md-12">
+                            <div class="media-body row">
+                                <div class="col-lg-12">
+                                    <div class="user-title my-title-style">
+                                        <h2>@Model.Title</h2>
+                                        <span style="font-weight:bold">
+                                            投票截止日: @Model.EndTime.ToString("yyyy/MM/dd")
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="pull-right cover-btn">
+                                        <button type="button" class="btn btn-primary m-b-5"><i class="icofont icofont-ui-messaging"></i> 聯繫主辦人</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-header-text">@Html.DisplayNameFor(model => model.Summary)</h5>
+                        <div class="card-header-right">
+                            <i class="icofont icofont-rounded-down"></i>
+                        </div>
+                    </div>
+                    <div class="card-block">
+                        <div class="view-desc">
+                            @{ if (!string.IsNullOrWhiteSpace(Model.Summary))
+                                {
+                                    @Html.Raw(Model.Summary);
+                                }
+                                else
+                                {
+                                    <p>此投票無詳細介紹。</p>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-header-text">@title</h5>
+                        <div class="text-muted" style="font-size:14px">請確認答案無誤，提交後將無法重新填寫。</div>
+                    </div>
+                    <div class="card-block">
+                        <div class="row">
+                            <div class="col-lg-11">
+                                @if (Model.VotingContents != null)
+                                {
+                                    int count = 0;
+                                    int countForInput = 0;
+                                    string nameForInput = "";
+                                    bool flag = false;
+                                    <ul class="question-block">
+                                        @foreach (var question in Model.VotingContents)
+                                        {
+                                            if (question.VoteNum != count)
+                                            {
+                                                count = question.VoteNum;
+                                                countForInput++;
+                                                nameForInput = "answerInput" + countForInput;
+                                                flag = true;
+                                                <li class="title-block">
+                                                    @count .
+                                                    @Html.DisplayFor(model => question.VoteText)
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="choice-block">
+                                                    @if (question.IsMultipleChoices)
+                                                    {
+                                                        <label class="input-container checkbox-style">
+                                                            @Html.DisplayFor(model => question.VoteText)
+                                                            @if (flag)
+                                                            {
+                                                                flag = false;
+                                                                <input type="checkbox" value="@question.VotingContentId" name="@nameForInput" class="answers" required data-msg="* 請至少勾選一項。" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="checkbox" value="@question.VotingContentId" name="@nameForInput" class="answers" />
+                                                            }
+                                                            <span class="vote-checkmark ck-checkmark"></span>
+                                                        </label>
+                                                    }
+                                                    else
+                                                    {
+                                                        <label class="input-container radiobtn-style">
+                                                            @Html.DisplayFor(model => question.VoteText)
+                                                            @if (flag)
+                                                            {
+                                                                flag = false;
+                                                                <input type="radio" value="@question.VotingContentId" name="@nameForInput" class="answers" required data-msg="* 請選取一個答案。" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="radio" value="@question.VotingContentId" name="@nameForInput" class="answers" />
+                                                            }
+                                                            <span class="vote-checkmark rb-checkmark"></span>
+                                                        </label>
+                                                    }
+                                                </li>
+                                            }
+                                        }
+
+                                        <li>
+                                            <label class="title-block" for="comments">補充意見</label>
+                                            <textarea class="form-control text-box multi-line" id="comments" style="height:150px"></textarea>
+                                        </li>
+                                    </ul>
+                                    <div class="col-md-3" style="margin: 30px auto">
+                                        <a href="#" class="previous-btn" id="edit-cancel" style="width:49%">回首頁</a>
+                                        <input type="button" value="送出" class="btn btn-round btn-primary" id="save_btn" style="width:49%" data_toggle="modal" data_target="#InfoModal" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p> 發送投票者還沒寫題目喔.. </p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="itemid" value="@Model.VotingId" />
+@Html.AntiForgeryToken()
+@Html.Partial("_ModalDeletePartial")
+<p>
+    <button type="button" class="btn btn-inverse" id="editBtn"><i class="icofont icofont-edit"></i>返回編輯</button>
+    <button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal"><i class="icofont icofont-ui-delete"></i>刪除活動</button>
+</p>
+
+@section Scripts{
+    <script type="text/javascript">
+        $('.view-desc').find('img').attr('style', 'width:100%');
+
+        $('#editBtn').click(function () {
+            window.location.href = '@Url.Action("Edit", "Votings", new { id = Model.VotingId })';
+        });
+    </script>
+}

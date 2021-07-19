@@ -1,0 +1,120 @@
+﻿@model EnterprisePortal.Models.Activity
+
+@{
+    string title = "活動";
+    string fullTitle = title + "報名系統";
+    string listName = title + "列表";
+    string subList = "編輯" + title;
+    ViewBag.Title = "預覽" + title + "報名畫面";
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Edit",new { id=Model.ActivityId})">@subList</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="cover-profile">
+                <div class="profile-bg-img">
+                    <img class="profile-bg-img img-fluid" src="@Model.Picture.Substring(1)" alt="bg-img" style="max-height:200px">
+                    <div class="card-block user-info">
+                        <div class="col-md-12">
+                            <div class="media-body row">
+                                <div class="col-lg-12">
+                                    <div class="user-title" style="background-color:rgba(255, 255, 255,0.7);padding:5px 10px;border-radius:5px">
+                                        <h2>@Model.Title</h2>
+                                        <span style="font-weight:bold">
+                                            報名截止日: @Model.EndTime.ToString("yyyy/MM/dd")
+                                            @{ if (Model.EndTime < DateTime.Now)
+                                                {
+                                                    <span>(已結束)</span>
+                                                }
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="pull-right cover-btn">
+                                        <button type="button" class="btn btn-primary m-r-10 m-b-5"><i class="icofont icofont-close-squared-alt"></i> 婉拒參加</button>
+                                        <button type="button" class="btn btn-primary m-b-5"><i class="icofont icofont-ui-messaging"></i> 聯繫主辦人</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="tab-content">
+                <div class="tab-pane active" id="personal" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-header-text">活動內容</h5>
+                                    <div class="card-header-right">
+                                        <i class="icofont icofont-rounded-down"></i>
+                                    </div>
+                                </div>
+                                <div class="card-block user-desc">
+                                    <div class="view-desc">
+                                        @{ if (!string.IsNullOrWhiteSpace(Model.Summary))
+                                            {
+                                                @Html.Raw(Model.Summary);
+                                            }
+                                            else
+                                            {
+                                                <p>此活動無詳細內容。</p>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="itemid" value="@Model.ActivityId" />
+@Html.AntiForgeryToken()
+@Html.Partial("_ModalDeletePartial")
+<p>
+    <button class="btn btn-inverse" id="editBtn"><i class="icofont icofont-edit"></i>返回編輯</button>
+    <button class="btn btn-default" data-toggle="modal" data-target="#myModal"><i class="icofont icofont-ui-delete"></i>刪除活動</button>
+</p>
+
+@section Scripts{
+    <script type="text/javascript">
+        $('.view-desc').find('img').attr('style', 'width:100%');
+
+        $('#editBtn').click(function () {
+            window.location.href = '@Url.Action("Edit", "Activities", new { id = Model.ActivityId })';
+        });
+    </script>
+}

@@ -1,0 +1,203 @@
+﻿@model EnterprisePortal.Models.QuickLinksViewModel
+
+@{
+    string title = "常用連結";
+    string listName = title + "列表";
+    ViewBag.Title = title;
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@title</h4>
+        <span>放置於登入頁面</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@listName</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>@listName</h5>
+                    <button type="button" class="ti-plus little-plus-btn" id="createBtn" title="新增連結"></button>
+                    <span>常用連結是經由分類管理。</span>
+                </div>
+                <div class="card-block">
+                    <div class="table-responsive">
+                        <table class="table" id="table_QuickLinks">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.QuickLinks.Single().QuickLinksCategory.LinkCatName)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.QuickLinks.Single().LinkName)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.QuickLinks.Single().LinkUrl)
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.QuickLinks)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.QuickLinksCategory.LinkCatName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.LinkName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.LinkUrl)
+                                        </td>
+                                        <td>
+                                            @Html.ActionLink(" ", "Edit", new { id = item.LinkId }, new { @class = "edit-delete-btn ti-pencil-alt", @title = "編輯" })
+                                            @Html.ActionLink(" ", "Delete", new { id = item.LinkId }, new { @class = "edit-delete-btn ti-trash delete_link", @data_toggle = "modal", @data_target = "#myModal", @data_id = item.LinkId, @title = "刪除" })
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <input type="hidden" id="itemid" value="" />
+                        <input type="hidden" id="section" value="" />
+                        @Html.AntiForgeryToken()
+                        @Html.Partial("_ModalDeletePartial")
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>常用連結分類列表</h5>
+                    <button type="button" class="ti-plus little-plus-btn" id="createCategory" data-toggle="modal" data-target="#modalForCategory" title="新增分類"></button>
+                    <span>常用連結分類管理。</span>
+                </div>
+                <div class="card-block">
+                    <div class="table-responsive">
+                        <table class="table" id="table_QuickLinksCategories">
+                            <tr>
+                                <th style="width:70%">
+                                    @Html.DisplayNameFor(model => model.QuickLinksCategories.Single().LinkCatName)
+                                </th>
+                                <th style="width:20%"></th>
+                            </tr>
+
+                            @foreach (var item in Model.QuickLinksCategories)
+                            {
+                                <tr>
+                                    <td class="view_mode">
+                                        @item.LinkCatName
+                                    </td>
+                                    <td style="display:none" class="edit_mode">
+                                        <input type="text" class="form-control category_edit_text" value="@item.LinkCatName" data-id="@item.LinkCatId" data-val="@item.LinkCatName" />
+                                    </td>
+                                    <td>
+                                        <a href="#" class="edit-delete-btn ti-pencil-alt edit_category" title="編輯"></a>
+                                        <a href='#' class='edit-delete-btn ti-trash delete_category' data-id="@item.LinkCatId" data-target='#myModal' data-toggle='modal' title='刪除'></a>
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+                @Html.Partial("_CategoryCreateModalPartial")
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script>
+        const token = $('input[name="__RequestVerificationToken"]').val();
+
+        $('#createConfirmed').click(function () {
+            var category_name = $('#categoryName').val();
+            if (category_name == '') {
+                alert('您沒有輸入字喔');
+                return false;
+            }
+            $.post('@Url.Action("Create", "QuickLinksCategories")', { __RequestVerificationToken: token, LinkCatName: category_name }, function (data) {
+                if (!$.isNumeric(data)) {
+                    alert(data);
+                    return false;
+                }
+                $('#modalForCategory').modal('hide');
+                $('#table_QuickLinksCategories').append("<tr><td class='view_mode'>" + category_name + "</td><td style='display:none' class='edit_mode'><input type='text' class='form-control category_edit_text' value='" + category_name + "' data-id='" + data + "' data-val='" + category_name +"' /></td>" +
+                    "<td><a href='#' class='edit-delete-btn ti-pencil-alt edit_category' title='編輯'></a><a href='#' class='edit-delete-btn ti-trash delete_category' data-id='" + data + "' data-target='#myModal' data-toggle='modal' title='刪除'></a></td></tr>");
+            });
+            $('#categoryName').val('');
+        });
+
+        $('#table_QuickLinksCategories').on('click', '.edit_category', function () {
+            $(this).parent('td').siblings('td.view_mode').hide();
+            $(this).parent('td').siblings('td.edit_mode').show();
+        });
+
+        $('#table_QuickLinksCategories').on('focusout', '.category_edit_text', function () {
+            var category_edited_id = $(this).data('id');
+            var category_edited_name = $(this).val();
+            var view_text = $(this).parent('td').siblings('td.view_mode');
+            $.post('@Url.Action("Edit", "QuickLinksCategories")', { __RequestVerificationToken: token, LinkCatId: category_edited_id, LinkCatName: category_edited_name }, function (data) {
+                view_text.text(category_edited_name);
+                $(this).val(category_edited_name);
+            });
+            $('td.edit_mode').hide();
+            $('td.view_mode').show();
+        });
+
+        $('#table_QuickLinksCategories').on('click', '.delete_category', function () {
+            var id = $(this).data('id');
+            $('#itemid').val(id);
+            $('#section').val('categories');
+        });
+
+        $('.delete_link').click(function() {
+            var id = $(this).data('id');
+            $('#itemid').val(id);
+            $('#section').val('links');
+        });
+
+        $('.otherDelete').click(function () {
+            var itemid = $('#itemid').val();
+            var section = $('#section').val();
+
+            if (section === 'links') {
+                $.post('@Url.Action("Delete", "QuickLinks")', { __RequestVerificationToken: token, id: itemid }, function (data) {
+                    $('#myModal').modal('hide');
+                    window.location.replace(data);
+                });
+            } else {
+                $.post('@Url.Action("Delete", "QuickLinksCategories")', { __RequestVerificationToken: token, id: itemid }, function (data) {
+                    $('#myModal').modal('hide');
+                    window.location.replace(data);
+                });
+            }
+        });
+
+        const config = {
+            "info": false,
+            "scrollX": false,
+            "order": [],
+            language: chineseVersion
+        };
+        $('#table_QuickLinks').dataTable(config);
+        $('.dataTables_filter').find('input[type=search]').attr('placeholder', '依關鍵字搜尋').attr('style','outline:none;border:0.5px solid;padding:5px 10px');
+    </script>
+}

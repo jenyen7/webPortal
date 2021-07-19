@@ -1,0 +1,17 @@
+﻿@model IEnumerable<EnterprisePortal.Models.UserRoleViewModel>
+
+<label class="customcheck">
+    全選
+    <input type="checkbox" id="checkedAll" />
+    <span class="checkmark"></span>
+</label>
+<div class="roles_container">
+    @foreach (var item in Model)
+    {
+        <label class="customcheck">
+            @item.RoleTitle
+            @Html.CheckBoxFor(modelItem => item.IsChecked, new { Name = "roles", value = item.RoleValue, @class = "checkSingle" })
+            <span class="checkmark"></span>
+        </label>
+    }
+</div>

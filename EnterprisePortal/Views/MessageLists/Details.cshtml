@@ -1,0 +1,42 @@
+﻿@model EnterprisePortal.Models.MessageList
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>MessageList</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Activity.Title)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Activity.Title)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.QuestionerUser.Account)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.QuestionerUser.Account)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Voting.Title)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Voting.Title)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.MessageListId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

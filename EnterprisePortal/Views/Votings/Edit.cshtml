@@ -1,0 +1,277 @@
+﻿@model EnterprisePortal.Models.Voting
+
+@{
+    string title = "投票";
+    string fullTitle = title + "系統";
+    string listName = title + "列表";
+    ViewBag.Title = "編輯" + title;
+}
+
+@section styles{
+    <style>
+        .my-icon-style {
+            margin-top: 10px;
+            margin-right: 20px;
+            border: none;
+        }
+    </style>
+}
+
+<div class="page-header">
+    <div class="page-header-title">
+        <h4>@fullTitle</h4>
+        <span>收集大家意見的地方。</span>
+    </div>
+    <div class="page-header-breadcrumb">
+        <ul class="breadcrumb-title">
+            <li class="breadcrumb-item">
+                <a href="@System.Web.Configuration.WebConfigurationManager.AppSettings["indexUrl"]">
+                    <i class="icofont icofont-home"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="@Url.Action("Index")">@listName</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#!">@ViewBag.Title</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@ViewBag.Title</h5>
+                        <span>@System.Web.Configuration.WebConfigurationManager.AppSettings["subtitle"]</span>
+                        <div class="card-header-right" style="background-color:transparent">
+                            <button type="button" id="votingResultsBtn" class="btn btn-primary btn-outline-primary btn-icon my-icon-style" title="投票結果"><i class="icofont icofont-chart-bar-graph" style="margin:0;padding:0;font-size:24px"></i></button>
+                            <button type="button" id="previewBtn" class="btn btn-primary btn-outline-primary btn-icon my-icon-style" title="預覽畫面"><i class="icofont icofont-layout" style="margin:0;padding:0;font-size:20px"></i></button>
+                            <button type="button" id="votesListBtn" class="btn btn-primary btn-outline-primary btn-icon my-icon-style" title="投票狀況"><i class="icofont icofont-listine-dots" style="margin:0;padding:0;font-size:20px"></i></button>
+                            <button type="button" id="sendGroupBtn" class="btn btn-primary btn-outline-primary btn-icon my-icon-style" title="傳送對象"><i class="icofont icofont-sign-in" style="margin:0;padding:0;font-size:20px"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-block">
+                        <div class="form-horizontal">
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                            @Html.HiddenFor(model => model.VotingId)
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ActivityType, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EnumDropDownListFor(model => model.ActivityType, "----- 請選擇投票主題類型 -----", htmlAttributes: new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.ActivityType, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.EndTime, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.EndTime, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.EndTime, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-11">
+                                    @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Summary, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                <div class="col-md-11">
+                                    <textarea class="ckeditor" name="editor">@Model.Summary</textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Picture, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                <div class="col-md-11">
+                                    <div>
+                                        <img id="uploaded_image" style="width:100%" alt="banner_img">
+                                        <input type="hidden" id="cropped_image" name="croppedImage" />
+                                    </div>
+                                    <label class="custom-file btn btn-primary">
+                                        <i class="ti-image"></i>上傳圖片
+                                        <input type="file" accept="image/*" style="display:none" id="cover_image">
+                                    </label>
+                                    <button class="btn btn-default" id="cancel_image"><i class="ti-close"></i>取消上傳</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-11">
+                                    @Html.LabelFor(model => model.VotingStatus, htmlAttributes: new { @class = "control-label" })
+                                    <label class="switch">
+                                        @Html.CheckBoxFor(model => model.VotingStatus)
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group text-right">
+                    <a href="@Url.Action("Index", "Votings")" class="previous-btn" id="backToListBtn">回列表</a>
+                    <input type="submit" value="儲存" class="btn btn-inverse" />
+                    <input type="button" id="editQuestionsBtn" value="編輯題目" class="btn btn-default" />
+                </div>
+            }
+            @Html.Partial("_CroppieModalPartial")
+            <div class="modal fade" id="votingforms_listModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false">
+                <div class="modal-dialog modal-lg" style="max-width: 700px">
+                    <div class="modal-content" id="votingforms_list">
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="sendGroupModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content" id="DepsList">
+                        @Html.Action("RenderRecipients", "VotingContents", new { id = Model.VotingId })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <link href="~/Scripts/Croppie-2.6.5/croppie.css" rel="stylesheet" />
+    <script src="~/Scripts/Croppie-2.6.5/croppie.min.js"></script>
+    <script src="~/Scripts/ckeditor/ckeditor.js"></script>
+    <script src="~/Scripts/ckfinder/ckfinder.js"></script>
+    <script type="text/javascript">
+        CKEDITOR.replace('editor', { uiColor: '#1abc9c80' });
+
+        const original_img = '@Model.Picture.Substring(1)';
+        $('#uploaded_image').attr('src', original_img);
+
+        const image_crop = $('#image_demo').croppie({
+            viewport: {
+                width: 1000,
+                height: 200,
+                type: 'square'
+            },
+            boundary: {
+                width: 1100,
+                height: 300
+            }
+        });
+
+        $('#cover_image').on('change', function () {
+            var ext = $(this).val().split('.').pop().toLowerCase();
+            if ($.inArray(ext, ['gif', 'png', 'jpg', 'jpeg']) == -1) {
+                alert('我們只接受GIF,PNG,JPG跟JPEG檔。');
+                this.value = '';
+                return false;
+            };
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                image_crop.croppie('bind', {
+                    url: e.target.result,
+                });
+            }
+            reader.readAsDataURL(this.files[0]);
+            $('#uploadimageModal').modal('show');
+        });
+
+        $('.crop_image').click(function () {
+            image_crop.croppie('result', {
+                type: 'canvas'
+            }).then(function (src) {
+                $("#cropped_image").val(src);
+                $("#uploaded_image").attr('src', src);
+            });
+            $('#uploadimageModal').modal('hide');
+        });
+
+        $('#cancel_image').click(function (e) {
+            e.preventDefault();
+            $('#cover_image').val('');
+            $('#uploaded_image').attr('src', original_img);
+        });
+
+        $('#votingResultsBtn').click(function (e) {
+            e.preventDefault();
+            window.location.href = '@Url.Action("VotingResult", "Votings", new { id = Model.VotingId })';
+        });
+
+        $('#previewBtn').click(function (e) {
+            e.preventDefault();
+            window.location.href = '@Url.Action("Details", "Votings", new { id = Model.VotingId })';
+        });
+
+        $('#votesListBtn').click(function (e) {
+            e.preventDefault();
+            var url = '@Url.Action("VotesList", "Votings", new { id = Model.VotingId })';
+            $('#votingforms_list').load(url);
+            $('#votingforms_listModal').modal('show');
+        });
+
+        $('#sendGroupBtn').click(function (e) {
+            e.preventDefault();
+            $('#sendGroupModal').modal('show');
+        });
+
+        $('#editQuestionsBtn').click(function (e) {
+            e.preventDefault();
+            window.location.href = '@Url.Action("Edit", "VotingContents", new { id = Model.VotingId })';
+        });
+
+        $('#searchAccountBtn').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "@Url.Action("SearchAccount","Activities")",
+                data: { email: $("#SearchUser").val() },
+                cache: false,
+                type: "POST",
+                success: function (data, textStatus, jqXHR) {
+                    if (!data.success) {
+                        alert(data.message);
+                    } else {
+                        var present = false;
+                        $('.account-ids').each(function () {
+                            if (this.value == data.accounts) {
+                                present = true;
+                                return false;
+                            };
+                        });
+                        $('.checkSingle').each(function () {
+                            if ($(this).is(':checked')) {
+                                if (this.value == data.accountDep) {
+                                    present = true;
+                                    return false;
+                                };
+                            };
+                        });
+                        if (present) {
+                            alert('您已經加過這個同仁，或者已經加了他的部門囉。');
+                            return;
+                        };
+                        $('#userFound').append("<li><input type='text' name='UserAccounts' value='" + data.accounts + "'class='account-ids' readonly='true' />" +
+                            "<input type='hidden' name='UserIds' value='" + data.hiddenId + "' class='hiddenIds' />" +
+                            "<input type='button' class='delete-account-btn' value='x' /></li>");
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseJSON.message);
+                }
+            });
+        });
+
+        $('#userFound').on('click', '.delete-account-btn', function () {
+            $(this).parents("li").remove();
+        });
+    </script>
+}

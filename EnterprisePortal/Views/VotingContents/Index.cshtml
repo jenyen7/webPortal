@@ -1,0 +1,51 @@
+﻿@model IEnumerable<EnterprisePortal.Models.VotingContent>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Voting.Title)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.VoteText)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.VoteNum)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsMultipleChoices)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Voting.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VoteText)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VoteNum)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsMultipleChoices)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.VotingContentId }) |
+                @Html.ActionLink("Details", "Details", new { id = item.VotingContentId }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.VotingContentId })
+            </td>
+        </tr>
+    }
+</table>
