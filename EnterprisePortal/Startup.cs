@@ -1,7 +1,7 @@
 ﻿using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartupAttribute(typeof(EnterprisePortal.Startup))]
+[assembly: OwinStartup(typeof(EnterprisePortal.Startup))]
 
 namespace EnterprisePortal
 {
@@ -9,8 +9,8 @@ namespace EnterprisePortal
     {
         public void Configuration(IAppBuilder app)
         {
-            ConfigureAuth(app);
             app.MapSignalR();
+            ConfigureAuth(app);
         }
     }
 }

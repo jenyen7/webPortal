@@ -162,7 +162,7 @@
                                 </div>
                                 <div>
                                     <div class="pull-right cover-btn">
-                                        <button type="button" class="btn btn-primary m-b-5"><i class="icofont icofont-ui-messaging"></i> 聯繫主辦人</button>
+                                        <button type="button" class="btn btn-primary m-b-5" id="message_btn"><i class="icofont icofont-ui-messaging"></i> 聯繫主辦人</button>
                                     </div>
                                 </div>
                             </div>
@@ -210,7 +210,10 @@
                                     if (Model.Voting.VotingContents != null)
                                     {
                                         @Html.AntiForgeryToken()
+                                        <input type="hidden" id="votingId" value="@Model.VotingId" />
                                         <input type="hidden" id="votingformId" value="@Model.VotingFormId" />
+                                        <input type="hidden" id="PersonFillingTheForm" value="@Model.UserId" />
+                                        <input type="hidden" id="PersonInCharge" value="@Model.Voting.UserId" />
                                         <ul class="question-block">
                                             @{ int count = 0;
                                                 int countForInput = 0;
@@ -300,7 +303,17 @@
     @Scripts.Render("~/bundles/jqueryval")
     <script type="text/javascript">
         $('#infoModal').modal('show');
-        $('.view-desc').find('img').attr('style', 'width:100%');
+        $('.view-desc').find('img').attr('style', 'max-width: 1130px;');
+
+        $('#message_btn').click(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var votingId = $('#votingId').val();
+            var personFillingTheFormId = $('#PersonFillingTheForm').val();
+            var personInChargeId = $('#PersonInCharge').val();
+            $.post('@Url.Action("StartConversation", "MessageLists")', { __RequestVerificationToken: token, VotingId: votingId, QuestionerId: personFillingTheFormId, AnswererId: personInChargeId}, function (data) {
+                window.location.assign(data);
+            });
+        });
 
         $('#answersform').validate({
             errorClass: 'text-danger',

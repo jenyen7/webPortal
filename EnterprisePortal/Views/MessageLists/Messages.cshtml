@@ -1,10 +1,99 @@
-﻿@model IEnumerable<EnterprisePortal.Models.Message>
+﻿@model EnterprisePortal.Models.MessageViewModel
 
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     string title = "訊息";
     string listName = title + "列表";
     ViewBag.Title = title + "內容";
+}
+
+@section styles{
+    <style>
+        .message-box {
+            overflow-y: scroll;
+            overflow-x: hidden;
+            height: 550px;
+        }
+
+        .my-label {
+            display: block;
+            margin: 10px auto;
+            width: 100px;
+            text-align: center;
+        }
+
+        .dialog-container {
+            display: flex;
+        }
+
+        .avatar {
+            border-radius: 50%;
+            width: 60px;
+            height: auto;
+        }
+
+        .dialog-box {
+            width: 70%;
+            min-height: 100px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .left-box {
+            margin-left: 20px;
+        }
+
+            .left-box:before {
+                content: "";
+                position: absolute;
+                top: 10px;
+                left: -30px;
+                border: 20px solid transparent;
+                border-right-color: white;
+            }
+
+        .left-box-time {
+            position: absolute;
+            right: -50px;
+            bottom: 5px
+        }
+
+        .right-box {
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+            .right-box:before {
+                content: "";
+                position: absolute;
+                top: 10px;
+                right: -30px;
+                border: 20px solid transparent;
+                border-left-color: white;
+            }
+
+        .right-box-time {
+            position: absolute;
+            left: -50px;
+            bottom: 5px
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            width: 80%;
+            margin: 20px 10px;
+        }
+
+        .input-text {
+            width: 100%;
+            margin-right: 20px;
+            border-radius: 5px;
+        }
+    </style>
 }
 
 <div class="page-header">
@@ -29,75 +118,148 @@
     </div>
 </div>
 
+<div class="page-body">
+    <div class="row">
+        <div class="col-sm-12" style="margin-bottom:10px">
+
+            @if (Model.SectionId == 1)
+            {
+                <label class="label label-primary">@Model.Name</label>
+                <label class="label label-success">活動</label>@Model.Title
+                <a href="@Url.Action("ApplicationForm", "Activities", new { id = Model.TitleId})" target="_blank"><i class="icofont icofont-external-link"></i></a>
+            }
+            else
+            {
+                <label class="label label-primary">@Model.Name</label>
+                <label class="label label-warning">投票</label>@Model.Title
+                <a href="@Url.Action("VotingForm", "Votings", new { id = Model.TitleId})" target="_blank"><i class="icofont icofont-external-link"></i></a>
+            }
+        </div>
+        <div class="col-sm-12 message-box" id="dialog">
+            @if (Model.Messages.Any())
+            {
+                string previousDate = "";
+                foreach (var item in Model.Messages)
+                {
+                    var currentDate = item.Time.ToString("MM-dd");
+                    if (currentDate != previousDate)
+                    {
+                        previousDate = currentDate;
+                        <label class="label label-info my-label">@currentDate</label>
+                    }
+                    if (item.SenderId == Model.CurrentUser)
+                    {
+                        <div class="dialog-container">
+                            <div class="card dialog-box right-box">
+                                @item.Text
+                                <div class="right-box-time">
+                                    @item.Time.ToString("HH:mm")
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="dialog-container">
+                            <div><img src="@Model.Avatar" alt="avatar" class="avatar" /></div>
+                            <div class="card dialog-box left-box">
+                                @item.Text
+                                <div class="left-box-time">
+                                    @item.Time.ToString("HH:mm")
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            }
+            else
+            {
+                <span class="my-label">尚無對話紀錄。</span>
+            }
+        </div>
+        <div class="input-container">
+            <div class="input-text">
+                <textarea name="textarea" class="form-control" id="msgText" style="height:80px;resize: none;"></textarea>
+            </div>
+            <div>
+                <button type="button" class="btn btn-primary" id="sendMessageBtn">送出</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/Scripts/jquery.signalR-2.4.2.min.js"></script>
-    <script src="signalr/js"></script>
+    <script src="~/signalr/js"></script>
     <script>
+        $("#dialog").scrollTop($("#dialog")[0].scrollHeight);
+
         (function () {
+            var currentUserId = '@Model.CurrentUser';
+            var msgId = '@Model.MsgListId';
+            var avatar = '@Model.Avatar';
             var chat = $.connection.chathub;
-            //broadcast
-            chat.client.showmessage = function (name, message) {
-                $("#welcome-messages").append("<span style='font-weight:bold'>" + name + "</span>: " + message +
-                    "<br />");
-            };
-            chat.client.announce = function (message) {
-                writeToPage(message);
+
+            chat.client.sendMsgBack = function (message,user, time) {
+                if (currentUserId == user) {
+                    $("#dialog").append("<div class='dialog-container'><div class='card dialog-box right-box'>" +
+                        message + "<div class='right-box-time'>" + time + "</div></div></div>");
+                } else {
+                    $("#dialog").append("<div class='dialog-container'><div><img src=" + avatar + " alt='avatar' class='avatar' /></div><div class='card dialog-box left-box'>" +
+                        message + "<div class='left-box-time'>" + time + "</div></div></div>");
+                }
             };
             var writeToPage = function (message) {
-                $("#welcome-messages").append(message + "<br />");
-            };
-
-            //group
-            chat.client.sendMsgBack = function (message, character) {
-                $("#welcome-messages2").append("<span style='font-weight:bold'>" + character + ": " + message +
-                    "</span><br />");
+                $("#dialog").append("<label class='label label-default my-label'>" + message + "</label>");
             };
             chat.client.notify = function (message) {
-                writeToPage2(message);
+                writeToPage(message);
             };
-            chat.client.welcomeMsg = function (message) {
-                writeToPage2(message);
-            };
-            var writeToPage2 = function (message) {
-                $("#welcome-messages2").append(message + "<br />");
-            };
-            var groupId;
-            var whoIam;
+
             $.connection.hub.start()
                 .done(function () {
-                    whoIam = prompt("請表明身分:", 0);
-                    groupId = prompt("想加入的對話視窗:", 5);
-                    chat.server.join(groupId);
-                    chat.server.notify("對方上線了。", groupId);
-                    chat.server.welcome("歡迎您來到" + groupId + "號房。");
+                    chat.server.join(msgId);
+                    chat.server.notify("對方上線了。", msgId);
                 })
                 .fail(function () {
                     writeToPage("連線失敗。");
                 });
+
             $.connection.hub.connectionSlow(function () {
                 writeToPage("連線不穩..");
             });
 
-            $("#click-me").on("click", function () {
-                chat.server.broadcast($("#textName").val(), $("#textMsg").val());
-                chat.server.getServerDateTime()
-                    .done(function (data) {
-                        writeToPage(data);
-                        $('#textMsg').val('');
+            $.connection.hub.reconnecting(function () {
+                writeToPage("嘗試連線中..");
+            });
+
+            $.connection.hub.disconnected(function () {
+                chat.server.notify("對方離線了。", msgId);
+                setTimeout(function () {
+                    $.connection.hub.start();
+                }, 5000);
+            });
+
+            function renderMsg() {
+                chat.server.sendMsg($('#msgText').val(), currentUserId, msgId)
+                    .done(function () {
+                        $('#msgText').val('');
+                        $("#dialog").scrollTop($("#dialog")[0].scrollHeight);
                     })
                     .fail(function (e) {
                         writeToPage(e)
                     })
+            }
+
+            $("#sendMessageBtn").on("click", function () {
+                renderMsg();
             });
-            $("#click-me2").on("click", function () {
-                chat.server.sendMsg($('#textMsg2').val(), whoIam, groupId)
-                    .done(function () {
-                        $('#textMsg2').val('');
-                    })
-                    .fail(function (e) {
-                        writeToPage2(e)
-                    })
-            })
-        })()
+
+            $("#msgText").keydown(function (e) {
+                if (e.keyCode == 13) {
+                    renderMsg();
+                }
+            });
+        })();
     </script>
 }

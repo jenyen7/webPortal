@@ -111,7 +111,7 @@
 
 @section Scripts{
     <script type="text/javascript">
-        $('.view-desc').find('img').attr('style', 'width:100%');
+        $('.view-desc').find('img').attr('style', 'max-width: 1130px;');
 
         $('#editBtn').click(function () {
             window.location.href = '@Url.Action("Edit", "Activities", new { id = Model.ActivityId })';

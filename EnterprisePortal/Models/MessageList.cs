@@ -30,8 +30,8 @@ namespace EnterprisePortal.Models
         [Display(Name = "提問者")]
         public int QuestionerId { get; set; }
 
-        [ForeignKey("QuestionerId")]
-        public virtual UserAccount QuestionerUser { get; set; }
+        [Display(Name = "回答者")]
+        public int AnswererId { get; set; }
 
         public virtual ICollection<Message> Messages { get; set; }
     }

@@ -58,7 +58,7 @@
                                 <div>
                                     <div class="pull-right cover-btn">
                                         <button type="button" class="btn btn-primary m-r-10 m-b-5" id="refuse_btn"><i class="icofont icofont-close-squared-alt"></i> 婉拒參加</button>
-                                        <button type="button" class="btn btn-primary m-b-5"><i class="icofont icofont-ui-messaging"></i> 聯繫主辦人</button>
+                                        <button type="button" class="btn btn-primary m-b-5" id="message_btn"><i class="icofont icofont-ui-messaging"></i> 聯繫主辦人</button>
                                     </div>
                                 </div>
                             </div>
@@ -236,6 +236,8 @@
                                                 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
                                                 @Html.HiddenFor(model => model.ActivityId)
                                                 @Html.HiddenFor(model => model.ApplicationId)
+                                                <input type="hidden" id="PersonFillingTheForm" value="@Model.UserId" />
+                                                <input type="hidden" id="PersonInCharge" value="@Model.Activity.UserId" />
                                                 <div class="col-lg-6">
                                                     <table class="table">
                                                         <tbody>
@@ -355,7 +357,7 @@
     <script src="../../assets/pages/user-profile.js"></script>
     <script type="text/javascript">
         $('#infoModal').modal('show');
-        $('.view-desc').find('img').attr('style', 'width:100%');
+        $('.view-desc').find('img').attr('style', 'max-width: 1130px;');
 
         function disableEditBtn() {
             var isFilled = '@Model.ListStatus';
@@ -379,6 +381,16 @@
             } else {
                 input.attr('readonly', true)
             }
+        });
+
+        $('#message_btn').click(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var activityId = $('#ActivityId').val();
+            var personFillingTheFormId = $('#PersonFillingTheForm').val();
+            var personInChargeId = $('#PersonInCharge').val();
+            $.post('@Url.Action("StartConversation", "MessageLists")', { __RequestVerificationToken: token, ActivityId: activityId, QuestionerId: personFillingTheFormId, AnswererId: personInChargeId}, function (data) {
+                window.location.assign(data);
+            });
         });
 
         $('#refuse_btn').click(function () {

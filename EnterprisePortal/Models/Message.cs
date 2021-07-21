@@ -29,4 +29,23 @@ namespace EnterprisePortal.Models
         [Display(Name = "發送時間")]
         public DateTime Time { get; set; }
     }
+
+    public class MessageViewModel
+    {
+        public IEnumerable<Message> Messages { get; set; }
+
+        public int CurrentUser { get; set; }
+
+        public int MsgListId { get; set; }
+
+        public string Avatar { get; set; }
+
+        public string Name { get; set; }
+
+        public string Title { get; set; }
+
+        public int TitleId { get; set; }
+
+        public int SectionId { get; set; }
+    }
 }

@@ -9,18 +9,49 @@
 @section styles{
     <style>
         .dialog-container {
-            border: 1px solid black;
+            height: 120px;
         }
 
-        .dialog-box {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px 10px;
+        .dialog-box-link {
+            position: relative;
+            display: block;
+            height: 100%;
+        }
+
+        .background-image-style {
+            width: 100%;
+            opacity: 0.2;
+            border-radius: 3px;
+        }
+
+        .dialog-text {
+            background-color: rgba(255,255,255,0.3);
+            min-width: 90%;
+            border-radius: 5px;
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            font-weight: bold;
+            color: black;
+            padding: 5px 10px;
+        }
+
+        .dialog-title {
+            font-size: 20px;
+        }
+
+        .last-message {
+            padding-bottom: 20px;
         }
 
         .time-box {
             position: relative;
+        }
+
+        .bin-position {
+            position: absolute;
+            bottom: 15px;
+            right: 30px;
         }
     </style>
 }
@@ -53,14 +84,12 @@
                     <span>對方可能不會即時回應，請耐心等候。</span>
                 </div>
                 <div class="card-block">
-                    @if (TempData["message"] != null)
-                    {<span style="color:red">@TempData["message"].ToString()</span>}
                     <div class="table-responsive">
                         <table class="table" id="table">
                             <thead>
                                 <tr>
-                                    <th style="width:70%">訊息標題</th>
-                                    <th style="width:30%">回應時間</th>
+                                    <th style="width:80%">訊息標題</th>
+                                    <th style="width:20%">回應時間</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -70,24 +99,48 @@
                                         @if (item.ActivityId != null)
                                         {
                                             var lastMessage = item.Messages.OrderByDescending(o => o.Time).FirstOrDefault();
-                                            <td class="dialog-box">
-                                                <div>
-                                                    <img src="@item.Activity.Picture.Substring(1)" alt="picture" style="width:100%" />
-                                                </div>
-                                                <div>
-                                                    <div>
-                                                        @Html.DisplayFor(modelItem => item.Activity.Title)
-                                                    </div>
-                                                    <div>
-                                                        @lastMessage.Text
-                                                    </div>
-                                                </div>
+                                            <td>
+                                                <a href="@Url.Action("Messages",new { id = item.MessageListId})" class="dialog-box-link">
+                                                    <img src="@item.Activity.Picture.Substring(1)" alt="picture" class="background-image-style" />
+                                                    <ul class="dialog-text">
+                                                        <li><label class="label label-md label-success">活動</label></li>
+                                                        <li class="dialog-title">@item.Activity.Title</li>
+                                                        <li class="last-message">
+                                                            @if (lastMessage != null)
+                                                            {
+                                                                if (lastMessage.SenderId != ViewBag.CurrentUser)
+                                                                {
+                                                                    <span>對方: </span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>您: </span>
+                                                                }
+                                                                if (lastMessage.Text.Length > 20)
+                                                                {
+                                                                    <span>@lastMessage.Text.Substring(0, 20) ...</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    @lastMessage.Text
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>尚無對話訊息。</span>
+                                                            }
+                                                        </li>
+                                                    </ul>
+                                                </a>
                                             </td>
                                             <td class="time-box">
                                                 <div>
-                                                    @lastMessage.Time.ToString("MM-dd hh:mm")
+                                                    @if (lastMessage != null)
+                                                    {
+                                                        @lastMessage.Time.ToString("MM-dd HH:mm")
+                                                    }
                                                 </div>
-                                                <div style="position:absolute; bottom:0">
+                                                <div class="bin-position">
                                                     @Html.ActionLink(" ", "Delete", new { id = item.MessageListId }, new { @class = "edit-delete-btn ti-trash delete", @data_toggle = "modal", @data_target = "#myModal", @data_id = item.MessageListId, @title = "刪除" })
                                                 </div>
                                             </td>
@@ -95,8 +148,51 @@
                                         }
                                         else
                                         {
+                                            var lastMessage = item.Messages.OrderByDescending(o => o.Time).FirstOrDefault();
                                             <td>
-                                                @Html.DisplayFor(modelItem => item.Voting.Title)
+                                                <a href="@Url.Action("Messages",new { id = item.MessageListId})" class="dialog-box-link">
+                                                    <img src="@item.Voting.Picture.Substring(1)" alt="picture" class="background-image-style" />
+                                                    <ul class="dialog-text">
+                                                        <li><label class="label label-md label-warning">投票</label></li>
+                                                        <li class="dialog-title">@item.Voting.Title</li>
+                                                        <li class="last-message">
+                                                            @if (lastMessage != null)
+                                                            {
+                                                                if (lastMessage.SenderId != ViewBag.CurrentUser)
+                                                                {
+                                                                    <span>對方: </span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>您: </span>
+                                                                }
+                                                                if (lastMessage.Text.Length > 20)
+                                                                {
+                                                                    <span>@lastMessage.Text.Substring(0, 20) ...</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    @lastMessage.Text
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>尚無對話訊息。</span>
+                                                            }
+                                                        </li>
+                                                    </ul>
+                                                </a>
+                                            </td>
+                                            <td class="time-box">
+                                                <div>
+                                                    @if (lastMessage != null)
+                                                    {
+                                                        @lastMessage.Time.ToString("MM-dd hh:mm")
+                                                    }
+                                                </div>
+                                                <div class="bin-position">
+                                                    @Html.ActionLink(" ", "Delete", new { id = item.MessageListId }, new { @class = "edit-delete-btn ti-trash delete", @data_toggle = "modal", @data_target = "#myModal", @data_id = item.MessageListId, @title = "刪除" })
+                                                </div>
                                             </td>
                                         }
                                     </tr>
@@ -110,6 +206,10 @@
                 </div>
             </div>
         </div>
+        @if (TempData["modalTitle"] != null)
+        {
+            @Html.Partial("_ModalInfoPartial")
+        }
     </div>
 </div>
 
@@ -117,8 +217,10 @@
     <link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
     <script type="text/javascript" src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
     <script>
+        $('#infoModal').modal('show');
+
         const config = {
-            "order": [],
+            "order": [[1, "desc"]],
             language: chineseVersion
         };
         $('#table').dataTable(config);

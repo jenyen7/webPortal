@@ -343,6 +343,14 @@
     <Compile Include="Migrations\202107181927293_add booling to messages.Designer.cs">
       <DependentUpon>202107181927293_add booling to messages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107200618491_remove message account liaison.cs" />
+    <Compile Include="Migrations\202107200618491_remove message account liaison.Designer.cs">
+      <DependentUpon>202107200618491_remove message account liaison.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107200820043_add answerer to messages.cs" />
+    <Compile Include="Migrations\202107200820043_add answerer to messages.Designer.cs">
+      <DependentUpon>202107200820043_add answerer to messages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\Department.cs" />
@@ -370,7 +378,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Utils\Enum.cs" />
-    <Compile Include="Utils\myHub.cs" />
+    <Compile Include="Utils\MyHub.cs" />
     <Compile Include="Utils\PermissionFilterAttribute.cs" />
     <Compile Include="Utils\ReCaptchaHelper.cs" />
     <Compile Include="Utils\ReCaptchaAttribute.cs" />
@@ -1155,7 +1163,6 @@
     <Content Include="Views\Shared\_ModalInputPartial.cshtml" />
     <Content Include="Views\RolePermissions\Icons.cshtml" />
     <Content Include="Views\MessageLists\Create.cshtml" />
-    <Content Include="Views\MessageLists\Details.cshtml" />
     <Content Include="Views\MessageLists\Edit.cshtml" />
     <Content Include="Views\MessageLists\Index.cshtml" />
     <Content Include="Views\MessageLists\Messages.cshtml" />
@@ -1269,6 +1276,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202107181927293_add booling to messages.resx">
       <DependentUpon>202107181927293_add booling to messages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107200618491_remove message account liaison.resx">
+      <DependentUpon>202107200618491_remove message account liaison.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107200820043_add answerer to messages.resx">
+      <DependentUpon>202107200820043_add answerer to messages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
