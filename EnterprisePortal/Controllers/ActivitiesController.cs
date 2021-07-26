@@ -149,6 +149,7 @@ namespace EnterprisePortal.Controllers
             {
                 return HttpNotFound();
             }
+            activity.Picture = eventFolder + activity.Picture;
             return View(activity);
         }
 
@@ -335,7 +336,7 @@ namespace EnterprisePortal.Controllers
             {
                 return HttpNotFound();
             }
-
+            activity.Picture = eventFolder + activity.Picture;
             return View(activity);
         }
 
@@ -350,11 +351,29 @@ namespace EnterprisePortal.Controllers
             if (ModelState.IsValid)
             {
                 Activity thisActivity = db.Activities.FirstOrDefault(f => f.ActivityId == activity.ActivityId);
+                bool IsTitleChanged = thisActivity.Title != activity.Title;
+                bool IsEndTimeChanged = thisActivity.EndTime != activity.EndTime;
+                if (IsTitleChanged || IsEndTimeChanged)
+                {
+                    var todolists = db.ToDoLists.Where(w => w.Summary == thisActivity.ActivityId.ToString()).ToList();
+                    if (IsTitleChanged && IsEndTimeChanged)
+                    {
+                        todolists.ForEach(n => { n.Title = activity.Title; n.EndTime = activity.EndTime; });
+                    }
+                    else if (IsTitleChanged)
+                    {
+                        todolists.ForEach(n => n.Title = activity.Title);
+                    }
+                    else
+                    {
+                        todolists.ForEach(n => n.EndTime = activity.EndTime);
+                    }
+                }
+                thisActivity.EndTime = activity.EndTime;
                 thisActivity.Title = activity.Title ?? thisActivity.Title;
                 thisActivity.Summary = editor ?? thisActivity.Summary;
                 thisActivity.ActivityType = activity.ActivityType;
                 thisActivity.ActivityStatus = activity.ActivityStatus;
-                thisActivity.EndTime = activity.EndTime;
                 string currentPicture = ProcessImage(croppedImage);
                 thisActivity.Picture = String.IsNullOrEmpty(currentPicture) ? thisActivity.Picture : currentPicture;
                 var log = CurrentUser.RecordActivity(LogAction.修改, LogArea.活動, $"{activity.Title}(id= {activity.ActivityId})");
@@ -401,7 +420,8 @@ namespace EnterprisePortal.Controllers
         {
             if (!string.IsNullOrWhiteSpace(croppedImage))
             {
-                string filePath = "~" + eventFolder + DateTime.Now.ToString("yyyyMMddhhmm") + ".png";
+                string filename = DateTime.Now.ToString("yyyyMMddhhmm") + ".png";
+                string filePath = "~" + eventFolder + filename;
                 string base64 = croppedImage;
                 byte[] bytes = Convert.FromBase64String(base64.Split(',')[1]);
                 using (FileStream stream = new FileStream(Server.MapPath(filePath), FileMode.Create))
@@ -409,7 +429,7 @@ namespace EnterprisePortal.Controllers
                     stream.Write(bytes, 0, bytes.Length);
                     stream.Flush();
                 }
-                return filePath;
+                return filename;
             }
             return string.Empty;
         }

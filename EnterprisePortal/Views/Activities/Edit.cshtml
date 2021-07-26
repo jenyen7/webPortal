@@ -164,7 +164,7 @@
     <script src="~/Scripts/ckfinder/ckfinder.js"></script>
     <script src="~/Scripts/jquery.Jcrop.min.js"></script>
     <script type="text/javascript">
-        CKEDITOR.replace('editor', { uiColor: '#1abc9c80' });
+        CKEDITOR.replace('editor');
 
         $('#previewBtn').click(function (e) {
             e.preventDefault();
@@ -229,7 +229,7 @@
 
         //Jcrop
         (function ($) {
-        let original_img = '@Model.Picture.Substring(1)';
+        let original_img = '@Model.Picture';
         var original_width = 0;
         var original_height = 0;
         var original_pro = 0;

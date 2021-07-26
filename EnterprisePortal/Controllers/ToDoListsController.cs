@@ -203,7 +203,7 @@ namespace EnterprisePortal.Controllers
             {
                 ToDoList thisToDoList = db.ToDoLists.FirstOrDefault(f => f.ToDoListId == toDoList.ToDoListId);
                 thisToDoList.Title = toDoList.Title ?? thisToDoList.Title;
-                thisToDoList.Summary = thisToDoList.Summary;
+                thisToDoList.Summary = toDoList.Summary;
                 thisToDoList.EndTime = toDoList.EndTime;
                 thisToDoList.ListStatus = toDoList.ListStatus;
                 db.SaveChanges();

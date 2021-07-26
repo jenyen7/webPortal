@@ -131,6 +131,7 @@
             <div class="modal fade" id="votingforms_listModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false">
                 <div class="modal-dialog modal-lg" style="max-width: 700px">
                     <div class="modal-content" id="votingforms_list">
+                        @Html.Action("VotesList", "Votings", new { id = Model.VotingId })
                     </div>
                 </div>
             </div>
@@ -152,9 +153,9 @@
     <script src="~/Scripts/ckeditor/ckeditor.js"></script>
     <script src="~/Scripts/ckfinder/ckfinder.js"></script>
     <script type="text/javascript">
-        CKEDITOR.replace('editor', { uiColor: '#1abc9c80' });
+        CKEDITOR.replace('editor');
 
-        const original_img = '@Model.Picture.Substring(1)';
+        const original_img = '@Model.Picture';
         $('#uploaded_image').attr('src', original_img);
 
         const image_crop = $('#image_demo').croppie({
@@ -214,8 +215,6 @@
 
         $('#votesListBtn').click(function (e) {
             e.preventDefault();
-            var url = '@Url.Action("VotesList", "Votings", new { id = Model.VotingId })';
-            $('#votingforms_list').load(url);
             $('#votingforms_listModal').modal('show');
         });
 

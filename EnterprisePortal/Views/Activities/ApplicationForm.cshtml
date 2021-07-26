@@ -218,7 +218,7 @@
                                                                 <td>
                                                                     <div class="input-group">
                                                                         <span class="input-group-addon"><i class="icofont icofont-people"></i></span>
-                                                                        @Html.EditorFor(model => model.ActivitiesApplication.PeopleNum, new { htmlAttributes = new { @class = "form-control", @id = "family_num", placeholder = "陪同人數", @value = "0", @readonly = "readonly" } })
+                                                                        @Html.EditorFor(model => model.ActivitiesApplication.PeopleNum, new { htmlAttributes = new { @class = "form-control", @id = "family_num", placeholder = "陪同人數", @Value = "0", @readonly = "readonly" } })
                                                                     </div>
                                                                     @Html.ValidationMessageFor(model => model.ActivitiesApplication.PeopleNum, "", new { @class = "text-danger" })
                                                                 </td>
@@ -340,9 +340,5 @@
                 return false;
             }
         });
-
-        //$('#edit-cancel').click(function (e) {
-        //    e.preventDefault();
-        //});
     </script>
 }

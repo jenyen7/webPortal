@@ -8,7 +8,7 @@
 @{
     if (Model.Any())
     {
-        <div class="modal-body" style="max-height:1000px; overflow-y:auto">
+        <div class="modal-body" style="max-height:1200px; overflow-y:auto">
             <div class="card-header">
                 <h5>@Model.First().Activity.Title</h5>
                 <span>
@@ -92,7 +92,7 @@
     else
     {
         <div class="modal-body">
-            <p>此活動沒有發出任何報名表。</p>
+            <p>此活動尚未有同仁填寫報名表。</p>
         </div>
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Globalization;
@@ -19,7 +20,7 @@ namespace EnterprisePortal.Controllers
     public class VotingsController : Controller
     {
         private readonly PortalModel db = new PortalModel();
-        private readonly string folder = "Events";
+        private readonly string eventFolder = ConfigurationManager.AppSettings["routeEventsFolder"];
 
         // GET: Votings
         public ActionResult Index(int? page, string sortOrder, string currentFilter, string searchString, string filterStatus, string endTimeStart, string endTimeEnd, string publishedDateStart, string publishedDateEnd)
@@ -148,6 +149,7 @@ namespace EnterprisePortal.Controllers
             {
                 return HttpNotFound();
             }
+            voting.Picture = eventFolder + voting.Picture;
             return View(voting);
         }
 
@@ -159,6 +161,7 @@ namespace EnterprisePortal.Controllers
             }
             int currentUserId = int.Parse(System.Web.HttpContext.Current.User.Identity.Name);
             VotingForm votingForm = db.VotingForms.FirstOrDefault(f => f.VotingId == id && f.UserId == currentUserId);
+            votingForm.Voting.Picture = eventFolder + votingForm.Voting.Picture;
             if (votingForm == null)
             {
                 return HttpNotFound();
@@ -366,6 +369,7 @@ namespace EnterprisePortal.Controllers
             {
                 return HttpNotFound();
             }
+            voting.Picture = eventFolder + voting.Picture;
             return View(voting);
         }
 
@@ -380,8 +384,8 @@ namespace EnterprisePortal.Controllers
             if (ModelState.IsValid)
             {
                 Voting thisVoting = db.Votings.FirstOrDefault(f => f.VotingId == voting.VotingId);
-                thisVoting.Title = voting.Title;
-                thisVoting.Summary = editor;
+                thisVoting.Title = voting.Title ?? thisVoting.Title;
+                thisVoting.Summary = editor ?? thisVoting.Summary;
                 thisVoting.ActivityType = voting.ActivityType;
                 thisVoting.VotingStatus = voting.VotingStatus;
                 thisVoting.EndTime = voting.EndTime;
@@ -438,7 +442,8 @@ namespace EnterprisePortal.Controllers
         {
             if (!string.IsNullOrWhiteSpace(croppedImage))
             {
-                string filePath = $"~/Upload/{folder}/{DateTime.Now:yyyyMMddhhmm}.png";
+                string filename = DateTime.Now.ToString("yyyyMMddhhmm") + ".png";
+                string filePath = "~" + eventFolder + filename;
                 string base64 = croppedImage;
                 byte[] bytes = Convert.FromBase64String(base64.Split(',')[1]);
                 using (FileStream stream = new FileStream(Server.MapPath(filePath), FileMode.Create))
@@ -446,16 +451,15 @@ namespace EnterprisePortal.Controllers
                     stream.Write(bytes, 0, bytes.Length);
                     stream.Flush();
                 }
-                return filePath;
+                return filename;
             }
             return string.Empty;
         }
 
         private string DefaultImage(int type)
         {
-            string path = "~/Upload/" + folder + "/";
             string filename = $"event{type}.jpg";
-            return path + filename;
+            return filename;
         }
 
         protected override void Dispose(bool disposing)

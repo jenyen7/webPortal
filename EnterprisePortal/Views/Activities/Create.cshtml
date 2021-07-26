@@ -127,7 +127,7 @@
     <script src="~/Scripts/ckfinder/ckfinder.js"></script>
     <script src="~/Scripts/jquery.Jcrop.min.js"></script>
     <script type="text/javascript">
-        CKEDITOR.replace('editor', { uiColor: '#1abc9c80' });
+        CKEDITOR.replace('editor');
 
         $('#submitBtn').click(function (e) {
             e.preventDefault();
@@ -152,6 +152,35 @@
                 error: function () {alert('出了點問題。') }
             });
 
+        });
+
+        $('#DepsList').on('click', '#checkedAll', function () {
+            if (this.checked) {
+                $('.checkSingle').each(function () {
+                    this.checked = true;
+                });
+            } else {
+                $('.checkSingle').each(function () {
+                    this.checked = false;
+                });
+            }
+        });
+
+        $('#DepsList').on('click', '.checkSingle', function () {
+            if ($(this).is(':checked')) {
+                var isAllChecked = 0;
+
+                $('.checkSingle').each(function () {
+                    if (!this.checked)
+                        isAllChecked = 1;
+                });
+                if (isAllChecked == 0) {
+                    $('#checkedAll').prop('checked', true);
+                }
+            }
+            else {
+                $('#checkedAll').prop('checked', false);
+            }
         });
 
         $('#searchAccountBtn').click(function (e) {

@@ -17,6 +17,7 @@ namespace EnterprisePortal.Controllers
     {
         private readonly PortalModel db = new PortalModel();
         private readonly string avatarFolder = ConfigurationManager.AppSettings["routeAvatarFolder"];
+        private readonly string eventFolder = ConfigurationManager.AppSettings["routeEventsFolder"];
 
         [AllowAnonymous]
         public ActionResult Login()
@@ -58,7 +59,6 @@ namespace EnterprisePortal.Controllers
                     string data = Newtonsoft.Json.JsonConvert.SerializeObject(userInfo);
                     CurrentUser.SetAuthenTicket(user.UserId.ToString(), data);
                     CreateToDoListForApplicationForm(user.UserId, user.DepId);
-                    RecordUserLoggedIn(user.UserId);
 
                     if (user.Password.EndsWith("ahahajisdf42"))
                     {
@@ -107,7 +107,7 @@ namespace EnterprisePortal.Controllers
 
         private void CreateToDoListForApplicationForm(int userId, int userDepId)
         {
-            var Activities = db.Activities.Where(w => (w.ColleaguesIds.Contains(userId.ToString()) || w.DepartmentsIds.Contains(userDepId.ToString())) && w.ActivityStatus == true && w.EndTime < DateTime.Now);
+            var Activities = db.Activities.Where(w => (w.ColleaguesIds.Contains(userId.ToString()) || w.DepartmentsIds.Contains(userDepId.ToString())) && w.ActivityStatus == true && w.EndTime > DateTime.Now);
             foreach (var item in Activities)
             {
                 var thisActivityToDo = db.ToDoLists.FirstOrDefault(f => f.Summary.Equals(item.ActivityId.ToString()) && f.ListType == ListType.活動 && f.UserId == userId);
@@ -125,24 +125,22 @@ namespace EnterprisePortal.Controllers
                     db.ToDoLists.Add(newToDo);
                 }
             }
+            db.UserLogs.Add(RecordUserLoggedIn(userId));
+
             db.SaveChanges();
         }
 
-        private void RecordUserLoggedIn(int userId)
+        private UserLog RecordUserLoggedIn(int userId)
         {
-            using (var context = new PortalModel())
+            UserLog userLog = new UserLog()
             {
-                UserLog userLog = new UserLog()
-                {
-                    TheUser = userId,
-                    Action = LogAction.登入,
-                    Area = LogArea.首頁登入,
-                    TheId = "",
-                    Time = DateTime.Now
-                };
-                context.UserLogs.Add(userLog);
-                context.SaveChanges();
+                TheUser = userId,
+                Action = LogAction.登入,
+                Area = LogArea.首頁登入,
+                TheId = "",
+                Time = DateTime.Now
             };
+            return userLog;
         }
 
         [AllowAnonymous]
@@ -272,7 +270,9 @@ namespace EnterprisePortal.Controllers
             };
 
             Activity activity = db.Activities.OrderByDescending(o => o.ActivityId).FirstOrDefault(f => f.UserId == currentUserId);
+            activity.Picture = eventFolder + activity.Picture;
             Voting voting = db.Votings.OrderByDescending(o => o.VotingId).FirstOrDefault(f => f.UserId == currentUserId);
+            voting.Picture = eventFolder + voting.Picture;
 
             HomePageViewModel homePage = new HomePageViewModel
             {

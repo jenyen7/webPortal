@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using EnterprisePortal.Models;
+using static EnterprisePortal.Utils.Enum;
 
 namespace EnterprisePortal.Controllers
 {
@@ -87,7 +88,7 @@ namespace EnterprisePortal.Controllers
             }
             ViewBag.VotingId = id;
             TempData["modalTitle"] = "請注意!";
-            TempData["modalBody"] = "隨意編輯問題將有可能會影響投票結果的準確性，如確定要繼續請按'關閉'鍵，否則請回上一頁。";
+            TempData["modalBody"] = "編輯問題會造成已提交結果的同仁必須再重做一次投票，如確定要繼續請按'關閉'鍵，否則請回上一頁。";
 
             return View(votingContent.ToList());
         }
@@ -99,15 +100,14 @@ namespace EnterprisePortal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int? id, string allQuestions)
         {
-            //var votingContents = db.VotingContents.Where(w => w.VotingId == id).ToList();
-            //votingContents.ForEach(n => db.VotingContents.Remove(n));
-            //db.SaveChanges();
-
             string sql = @"DELETE FROM VotingContents WHERE VotingId = @Id";
             using (var context = new PortalModel())
             {
                 context.Database.ExecuteSqlCommand(sql, new System.Data.SqlClient.SqlParameter("@Id", id));
             };
+            var voteForms = db.VotingForms.Where(w => w.VotingId == id && w.ListStatus == ToDoListStatus.已完成).ToList();
+            voteForms.ForEach(n => n.ListStatus = ToDoListStatus.待處理);
+
             if (!string.IsNullOrWhiteSpace(allQuestions))
             {
                 int titleNum = 0;
