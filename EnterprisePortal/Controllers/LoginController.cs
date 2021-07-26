@@ -9,12 +9,14 @@ using System.Data.Entity;
 using System.Web.Security;
 using System.Configuration;
 using static EnterprisePortal.Utils.Enum;
+using System.Web.Configuration;
 
 namespace EnterprisePortal.Controllers
 {
     public class LoginController : Controller
     {
         private readonly PortalModel db = new PortalModel();
+        private readonly string avatarFolder = ConfigurationManager.AppSettings["routeAvatarFolder"];
 
         [AllowAnonymous]
         public ActionResult Login()
@@ -48,26 +50,16 @@ namespace EnterprisePortal.Controllers
                     CurrentUser userInfo = new CurrentUser()
                     {
                         Account = user.Account,
-                        Avatar = user.Avatar,
+                        Avatar = avatarFolder + user.Avatar,
                         Permission = permissions.Key,
                         PermissionSection = permissions.Value,
                         Department = user.DepId
                     };
                     string data = Newtonsoft.Json.JsonConvert.SerializeObject(userInfo);
                     CurrentUser.SetAuthenTicket(user.UserId.ToString(), data);
-                    using (var context = new PortalModel())
-                    {
-                        UserLog userLog = new UserLog()
-                        {
-                            TheUser = user.UserId,
-                            Action = LogAction.登入,
-                            Area = LogArea.首頁登入,
-                            TheId = "",
-                            Time = DateTime.Now
-                        };
-                        context.UserLogs.Add(userLog);
-                        context.SaveChanges();
-                    };
+                    CreateToDoListForApplicationForm(user.UserId, user.DepId);
+                    RecordUserLoggedIn(user.UserId);
+
                     if (user.Password.EndsWith("ahahajisdf42"))
                     {
                         TempData["modalTitle"] = "修改密碼提醒。";
@@ -97,7 +89,7 @@ namespace EnterprisePortal.Controllers
                     var roleValSplit = roleVal.Split(',');
                     if (roleValSplit.Contains(permission.PValue))
                     {
-                        permissionSections += permission.Url.Split('/')[3] + ",";
+                        permissionSections += permission.Url.Split('/')[1] + ",";
                         if (permission.Url.Contains("QuickLinks"))
                         {
                             permissionSections += "QuickLinksCategories" + ",";
@@ -111,6 +103,46 @@ namespace EnterprisePortal.Controllers
             }
             var result = new KeyValuePair<string, string>(permissions, permissionSections);
             return result;
+        }
+
+        private void CreateToDoListForApplicationForm(int userId, int userDepId)
+        {
+            var Activities = db.Activities.Where(w => (w.ColleaguesIds.Contains(userId.ToString()) || w.DepartmentsIds.Contains(userDepId.ToString())) && w.ActivityStatus == true && w.EndTime < DateTime.Now);
+            foreach (var item in Activities)
+            {
+                var thisActivityToDo = db.ToDoLists.FirstOrDefault(f => f.Summary.Equals(item.ActivityId.ToString()) && f.ListType == ListType.活動 && f.UserId == userId);
+                if (thisActivityToDo == null)
+                {
+                    var newToDo = new ToDoList
+                    {
+                        ListType = ListType.活動,
+                        Title = item.Title,
+                        EndTime = item.EndTime,
+                        PublishedDate = item.PublishedDate,
+                        Summary = item.ActivityId.ToString(),
+                        UserId = userId,
+                    };
+                    db.ToDoLists.Add(newToDo);
+                }
+            }
+            db.SaveChanges();
+        }
+
+        private void RecordUserLoggedIn(int userId)
+        {
+            using (var context = new PortalModel())
+            {
+                UserLog userLog = new UserLog()
+                {
+                    TheUser = userId,
+                    Action = LogAction.登入,
+                    Area = LogArea.首頁登入,
+                    TheId = "",
+                    Time = DateTime.Now
+                };
+                context.UserLogs.Add(userLog);
+                context.SaveChanges();
+            };
         }
 
         [AllowAnonymous]
@@ -202,28 +234,19 @@ namespace EnterprisePortal.Controllers
         {
             int currentUserId = int.Parse(System.Web.HttpContext.Current.User.Identity.Name);
 
-            var toDoLists = db.ToDoLists.Where(w => w.UserId == currentUserId).OrderByDescending(o => o.PublishedDate).Take(50).ToList();
-            var activitiesLists = db.ActivitiesApplications.Where(w => w.UserId == currentUserId).OrderByDescending(o => o.Activity.PublishedDate).Take(25).ToList();
+            var toDoLists = db.ToDoLists.Where(w => w.UserId == currentUserId).OrderByDescending(o => o.PublishedDate).Take(75).ToList();
             var votingLists = db.VotingForms.Where(w => w.UserId == currentUserId).OrderByDescending(o => o.Voting.PublishedDate).Take(25).ToList();
 
             var allLists = new List<AllList>();
             toDoLists.ForEach(item => allLists.Add(new AllList()
             {
                 Id = item.ToDoListId,
-                ListType = ListType.待辦,
+                ListType = item.ListType,
                 Title = item.Title,
+                Summary = item.Summary,
                 ListStatus = item.ListStatus,
                 EndTime = item.EndTime,
                 PublishedDate = item.PublishedDate
-            }));
-            activitiesLists.ForEach(item => allLists.Add(new AllList()
-            {
-                Id = item.ActivityId,
-                ListType = ListType.活動,
-                Title = item.Activity.Title,
-                ListStatus = item.ListStatus,
-                EndTime = item.Activity.EndTime,
-                PublishedDate = item.Activity.PublishedDate
             }));
             votingLists.ForEach(item => allLists.Add(new AllList()
             {
@@ -236,13 +259,14 @@ namespace EnterprisePortal.Controllers
             }));
 
             UserAccount user = db.UserAccounts.FirstOrDefault(f => f.UserId == currentUserId);
+            string avatar = avatarFolder + user.Avatar;
             var announcements = db.Announcements.Where(w => w.DepId == user.DepId || w.IsPublic).OrderByDescending(o => o.PublishedDate).Take(50).ToList();
 
             SettingsViewModel settings = new SettingsViewModel
             {
                 Account = user.Account,
                 Email = user.Email,
-                Avatar = user.Avatar.Substring(1),
+                Avatar = avatar,
                 Department = user.Department.DepartmentName,
                 JoinedDate = user.JoinedDate.ToString("yyyy-MM-dd")
             };
@@ -252,7 +276,7 @@ namespace EnterprisePortal.Controllers
 
             HomePageViewModel homePage = new HomePageViewModel
             {
-                AllLists = allLists.OrderByDescending(o => o.PublishedDate),
+                AllLists = allLists,
                 Announcements = announcements,
                 Settings = settings,
                 Activity = activity,
@@ -265,13 +289,14 @@ namespace EnterprisePortal.Controllers
         {
             int currentUserId = int.Parse(System.Web.HttpContext.Current.User.Identity.Name);
             UserAccount thisUser = db.UserAccounts.FirstOrDefault(f => f.UserId == currentUserId);
+            string avatar = avatarFolder + thisUser.Avatar;
             SettingsViewModel settings = new SettingsViewModel
             {
                 UserId = thisUser.UserId,
                 Account = thisUser.Account,
                 PhoneNumber = thisUser.PhoneNumber,
                 Email = thisUser.Email,
-                Avatar = thisUser.Avatar
+                Avatar = avatar
             };
             return View(settings);
         }
@@ -281,7 +306,7 @@ namespace EnterprisePortal.Controllers
         public ActionResult Settings(SettingsViewModel model, HttpPostedFileBase file)
         {
             UserAccount thisUser = db.UserAccounts.FirstOrDefault(f => f.UserId == model.UserId);
-            model.Avatar = thisUser.Avatar;
+            model.Avatar = avatarFolder + thisUser.Avatar;
             if (ModelState.IsValid)
             {
                 if (!Utility.IsValidPhoneNumber(model.PhoneNumber))
@@ -295,7 +320,7 @@ namespace EnterprisePortal.Controllers
                 string message = "";
                 if (file != null)
                 {
-                    message = Utility.UploadImage(file, "Avatars");
+                    message = Utility.UploadImage(file, avatarFolder);
                     if (!message.StartsWith("~/Upload"))
                     {
                         TempData["messageForAvatar"] = message;
@@ -306,14 +331,17 @@ namespace EnterprisePortal.Controllers
                     return View(model);
                 }
 
-                if (!string.IsNullOrWhiteSpace(model.Password))
+                if (!String.IsNullOrWhiteSpace(model.Password))
                 {
                     thisUser.PasswordSalt = Salt.CreateSalt();
                     thisUser.Password = Salt.GenerateHashWithSalt(model.Password, thisUser.PasswordSalt);
                 }
-                thisUser.PhoneNumber = model.PhoneNumber;
-                thisUser.Email = model.Email;
-                thisUser.Avatar = string.IsNullOrEmpty(message) ? thisUser.Avatar : message;
+                if (!String.IsNullOrEmpty(message))
+                {
+                    thisUser.Avatar = message.Substring(message.LastIndexOf('/') + 1);
+                }
+                thisUser.PhoneNumber = model.PhoneNumber ?? thisUser.PhoneNumber;
+                thisUser.Email = model.Email ?? thisUser.Email;
                 db.SaveChanges();
 
                 return RedirectToAction("HomePage");

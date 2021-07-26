@@ -4,6 +4,7 @@
     string title = "訊息";
     string listName = title + "列表";
     ViewBag.Title = title;
+    string folder = System.Web.Configuration.WebConfigurationManager.AppSettings["routeEventsFolder"];
 }
 
 @section styles{
@@ -101,7 +102,8 @@
                                             var lastMessage = item.Messages.OrderByDescending(o => o.Time).FirstOrDefault();
                                             <td>
                                                 <a href="@Url.Action("Messages",new { id = item.MessageListId})" class="dialog-box-link">
-                                                    <img src="@item.Activity.Picture.Substring(1)" alt="picture" class="background-image-style" />
+                                                    @{ string bannerPic = folder + item.Activity.Picture;}
+                                                    <img src="@bannerPic" alt="picture" class="background-image-style" />
                                                     <ul class="dialog-text">
                                                         <li><label class="label label-md label-success">活動</label></li>
                                                         <li class="dialog-title">@item.Activity.Title</li>
@@ -151,7 +153,8 @@
                                             var lastMessage = item.Messages.OrderByDescending(o => o.Time).FirstOrDefault();
                                             <td>
                                                 <a href="@Url.Action("Messages",new { id = item.MessageListId})" class="dialog-box-link">
-                                                    <img src="@item.Voting.Picture.Substring(1)" alt="picture" class="background-image-style" />
+                                                    @{ string bannerPic = folder + item.Voting.Picture;}
+                                                    <img src="@bannerPic" alt="picture" class="background-image-style" />
                                                     <ul class="dialog-text">
                                                         <li><label class="label label-md label-warning">投票</label></li>
                                                         <li class="dialog-title">@item.Voting.Title</li>

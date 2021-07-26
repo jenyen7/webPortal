@@ -57,21 +57,16 @@ namespace EnterprisePortal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(RolePermission rolePermission)
         {
-            var checkRepetition = db.RolePermissions.FirstOrDefault(f => f.PValue.Equals(rolePermission.PValue));
-            if (checkRepetition != null)
+            if (ModelState.IsValid)
             {
-                TempData["message"] = "權限代號重複，請重新取名。";
-            }
-            else
-            {
-                if (ModelState.IsValid)
+                if (String.IsNullOrWhiteSpace(rolePermission.Icon))
                 {
-                    db.RolePermissions.Add(rolePermission);
-                    db.SaveChanges();
-
-                    CurrentUser.RecordActivityWithSaveChanges(LogAction.新增, LogArea.權限, $"{rolePermission.PermissionName}(id= {rolePermission.PermissionId})");
-                    return RedirectToAction("Index");
+                    rolePermission.Icon = "ti-layout-grid2-alt";
                 }
+                db.RolePermissions.Add(rolePermission);
+                db.SaveChanges();
+
+                return RedirectToAction("Index");
             }
             ViewBag.Pid = new SelectList(db.RolePermissions, "PermissionId", "PermissionName", rolePermission.Pid);
             return View(rolePermission);
@@ -102,6 +97,10 @@ namespace EnterprisePortal.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (String.IsNullOrWhiteSpace(rolePermission.Icon))
+                {
+                    rolePermission.Icon = "ti-layout-grid2-alt";
+                }
                 db.Entry(rolePermission).State = EntityState.Modified;
                 var log = CurrentUser.RecordActivity(LogAction.修改, LogArea.權限, $"{rolePermission.PermissionName}(id= {rolePermission.PermissionId})");
                 db.UserLogs.Add(log);
@@ -141,9 +140,6 @@ namespace EnterprisePortal.Controllers
                 return Json(Url.Action("Index"));
             }
             db.RolePermissions.Remove(rolePermission);
-
-            var log = CurrentUser.RecordActivity(LogAction.刪除, LogArea.權限, $"{rolePermission.PermissionName}(id= {rolePermission.PermissionId})");
-            db.UserLogs.Add(log);
 
             db.SaveChanges();
             return Json(Url.Action("Index"));

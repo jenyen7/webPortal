@@ -315,8 +315,6 @@
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
     <script type="text/javascript">
-        $(".theme-loader").remove();
-
         $('#saveQuestionsBtn').click(function (e) {
             e.preventDefault();
             if (!$('#questionsform').valid()) {

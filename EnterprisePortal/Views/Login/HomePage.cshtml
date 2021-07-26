@@ -155,13 +155,18 @@
                                             <td>
                                                 @{ switch ((int)item.ListType)
                                                     {
-                                                        case 1:<label class="label label-md label-info">個人</label>
-                                                            <a href="@Url.Action("Details","ToDoLists",new { id = item.Id})">@item.Title</a>
+                                                        case 0:<label class="label label-md label-info">個人</label>
+                                                            <a href="@Url.Action("Details", "ToDoLists", new { id = item.Id })">@item.Title</a>
                                                             break;
-                                                        case 2:<label class="label label-md label-success">活動</label>
-                                                            <a href="@Url.Action("ApplicationForm","Activities",new { id = item.Id})">@item.Title</a>
+                                                        case 1:<label class="label label-md label-success">活動</label>
+                                                            int activityId = 0;
+                                                            if (item.Summary != null)
+                                                            {
+                                                                activityId = int.Parse(item.Summary);
+                                                            }
+                                                            <a href="@Url.Action("ApplicationForm","Activities",new { id = activityId})">@item.Title</a>
                                                             break;
-                                                        case 3:<label class="label label-md label-warning">投票</label>
+                                                        case 2:<label class="label label-md label-warning">投票</label>
                                                             <a href="@Url.Action("VotingForm","Votings",new { id = item.Id})">@item.Title</a>
                                                             break;
                                                     }
@@ -305,7 +310,7 @@
         const config2 = {
             "pagingType": "full_numbers",
             "scrollX": false,
-            "order": [],
+            "order": [[3, "desc"]],
             language: chineseVersion
         };
         $('#table_announcements').dataTable(config1);

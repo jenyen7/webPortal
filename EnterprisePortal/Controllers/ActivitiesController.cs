@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Globalization;
@@ -19,7 +20,7 @@ namespace EnterprisePortal.Controllers
     public class ActivitiesController : Controller
     {
         private readonly PortalModel db = new PortalModel();
-        private readonly string folder = "Events";
+        private readonly string eventFolder = ConfigurationManager.AppSettings["routeEventsFolder"];
 
         // GET: Activities
         public ActionResult Index(int? page, string sortOrder, string currentFilter, string searchString, string filterStatus, string endTimeStart, string endTimeEnd, string publishedDateStart, string publishedDateEnd)
@@ -151,14 +152,6 @@ namespace EnterprisePortal.Controllers
             return View(activity);
         }
 
-        [HttpGet]
-        public ActionResult ApplicationList(int id)
-        {
-            var applications = db.ActivitiesApplications.Where(w => w.ActivityId == id).Take(50);
-            ViewBag.Total = applications.Count();
-            return PartialView("_ApplicationsListPartial", applications.ToList());
-        }
-
         public ActionResult ExportExcel(int id)
         {
             Activity activity = db.Activities.FirstOrDefault(f => f.ActivityId == id);
@@ -178,8 +171,6 @@ namespace EnterprisePortal.Controllers
             sheet.Cells[1, col++].Value = "活動名稱";
             sheet.Cells[1, col++].Value = "部門名稱";
             sheet.Cells[1, col++].Value = "帳號";
-            sheet.Cells[1, col++].Value = "是否已提交";
-            sheet.Cells[1, col++].Value = "是否參加";
             sheet.Cells[1, col++].Value = "名字";
             sheet.Cells[1, col++].Value = "身分證字號";
             sheet.Cells[1, col++].Value = "電子郵件";
@@ -188,59 +179,43 @@ namespace EnterprisePortal.Controllers
             sheet.Cells[1, col++].Value = "是否家人陪同";
             sheet.Cells[1, col++].Value = "陪同人數";
             sheet.Cells[1, col++].Value = "交通方式";
+            sheet.Cells[1, col++].Value = "填寫日期";
 
             string activityTitle = list.First().Activity.Title;
-            string isParticipating = "";
-            string name = "";
-            string email = "";
-            string citizenId = "";
-            string cellNum = "";
 
             int row = 2;
             foreach (var item in list)
             {
                 col = 1;
-                if ((int)item.ListStatus == 2)
-                {
-                    if (item.IsJoiningIn)
-                    {
-                        isParticipating = "參加";
-                        name = item.Name;
-                        citizenId = item.CitizenId;
-                        email = item.Email;
-                        cellNum = item.CellNumber;
-                    }
-                    else
-                    {
-                        isParticipating = "婉拒";
-                    }
-                }
+
                 sheet.Cells[row, col++].Value = activityTitle;
                 sheet.Cells[row, col++].Value = item.UserAccount.Department.DepartmentName;
                 sheet.Cells[row, col++].Value = item.UserAccount.Account;
-                sheet.Cells[row, col++].Value = item.ListStatus;
-                sheet.Cells[row, col++].Value = isParticipating;
-                sheet.Cells[row, col++].Value = name;
-                sheet.Cells[row, col++].Value = citizenId;
-                sheet.Cells[row, col++].Value = email;
-                sheet.Cells[row, col++].Value = cellNum;
+                sheet.Cells[row, col++].Value = item.Name;
+                sheet.Cells[row, col++].Value = item.CitizenId;
+                sheet.Cells[row, col++].Value = item.Email;
+                sheet.Cells[row, col++].Value = item.CellNumber;
                 sheet.Cells[row, col++].Value = item.IsVegetarian;
                 sheet.Cells[row, col++].Value = item.IsAccompanied;
                 sheet.Cells[row, col++].Value = item.PeopleNum;
                 sheet.Cells[row, col++].Value = item.Transportation;
+                sheet.Cells[row, col++].Value = item.DateCompleted;
 
                 row++;
-                isParticipating = "";
-                name = "";
-                citizenId = "";
-                email = "";
-                cellNum = "";
             }
             MemoryStream fileStream = new MemoryStream();
             ep.SaveAs(fileStream);
             ep.Dispose();
             fileStream.Position = 0;
             return File(fileStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ApplicationForms_" + activityTitle + ".xlsx");
+        }
+
+        [HttpGet]
+        public ActionResult ApplicationList(int id)
+        {
+            var applications = db.ActivitiesApplications.Where(w => w.ActivityId == id);
+            ViewBag.Total = applications.Count();
+            return PartialView("_ApplicationsListPartial", applications.ToList());
         }
 
         public ActionResult ApplicationForm(int? id)
@@ -250,56 +225,50 @@ namespace EnterprisePortal.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             int currentUserId = int.Parse(System.Web.HttpContext.Current.User.Identity.Name);
+            ToDoList toDoList = db.ToDoLists.FirstOrDefault(f => f.UserId == currentUserId && f.Summary.Equals(id.ToString()));
+            Activity activity = db.Activities.FirstOrDefault(f => f.ActivityId == id);
             ActivitiesApplication activitiesApplication = db.ActivitiesApplications.FirstOrDefault(f => f.ActivityId == id && f.UserId == currentUserId);
-            if (activitiesApplication == null)
+            activity.Picture = eventFolder + activity.Picture;
+            if (activity == null)
             {
                 return HttpNotFound();
             }
-            return View(activitiesApplication);
+            var activityApplicationFormViewModel = new ActivityApplicationFormViewModel
+            {
+                ActivitiesApplication = activitiesApplication,
+                Activity = activity,
+                ToDoList = toDoList
+            };
+            return View(activityApplicationFormViewModel);
         }
 
-        [HttpPost]
+        [HttpPost, ActionName("ApplicationForm")]
         [ValidateAntiForgeryToken]
-        public ActionResult ApplicationForm(ActivitiesApplication activitiesApplication)
+        public ActionResult CreateApplicationForm(ActivitiesApplication activitiesApplication, int toDoListId, int userId, int activityId)
         {
-            //if (!Utility.IsValidEmail(activitiesApplication.Email) ||
-            //    !Utility.IsValidCitizenId(activitiesApplication.CitizenId) ||
-            //    !Utility.IsValidPhoneNumber(activitiesApplication.CellNumber))
-            //{
-            //    return View(applicationForm);
-            //}
-            ActivitiesApplication thisAppForm = db.ActivitiesApplications.FirstOrDefault(f => f.ApplicationId == activitiesApplication.ApplicationId);
-            thisAppForm.ListStatus = ToDoListStatus.已完成;
-            thisAppForm.IsJoiningIn = true;
-            thisAppForm.CitizenId = thisAppForm.CitizenId ?? activitiesApplication.CitizenId;
-            thisAppForm.Name = activitiesApplication.Name;
-            thisAppForm.Email = activitiesApplication.Email;
-            thisAppForm.CellNumber = activitiesApplication.CellNumber;
-            thisAppForm.IsAccompanied = activitiesApplication.IsAccompanied;
-            thisAppForm.PeopleNum = activitiesApplication.IsAccompanied ? activitiesApplication.PeopleNum : 0;
-            thisAppForm.Transportation = activitiesApplication.Transportation;
-            thisAppForm.IsVegetarian = activitiesApplication.IsVegetarian;
-            thisAppForm.DateCompleted = DateTime.Now;
+            if (!Utility.IsValidEmail(activitiesApplication.Email) ||
+                //!Utility.IsValidCitizenId(activitiesApplication.CitizenId) ||
+                !Utility.IsValidPhoneNumber(activitiesApplication.CellNumber))
+            {
+                TempData["modalTitle"] = "資料不符合規格。";
+                TempData["modalBody"] = "電子郵件或手機號碼不符合規格，請重新填寫。";
+                return RedirectToAction("ApplicationForm", new { id = activityId });
+            }
+            activitiesApplication.ActivityId = activityId;
+            activitiesApplication.UserId = userId;
+            activitiesApplication.CitizenId = activitiesApplication.CitizenId ?? "not_required";
+            activitiesApplication.PeopleNum = activitiesApplication.IsAccompanied ? activitiesApplication.PeopleNum : 0;
+            activitiesApplication.DateCompleted = DateTime.Now;
+            db.ActivitiesApplications.Add(activitiesApplication);
+
+            ToDoList toDoList = db.ToDoLists.FirstOrDefault(f => f.ToDoListId == toDoListId);
+            toDoList.ListStatus = ToDoListStatus.已完成;
+
             db.SaveChanges();
             TempData["modalTitle"] = "報名成功。";
             TempData["modalBody"] = "如果填寫錯誤或者有其他問題，請洽詢主辦者，謝謝您~";
 
-            return RedirectToAction("ApplicationForm", new { id = thisAppForm.ActivityId });
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult ApplicationRefused(int appsId)
-        {
-            ActivitiesApplication thisAppForm = db.ActivitiesApplications.FirstOrDefault(f => f.ApplicationId == appsId);
-            thisAppForm.ListStatus = ToDoListStatus.已完成;
-            thisAppForm.IsJoiningIn = false;
-            thisAppForm.DateCompleted = DateTime.Now;
-            db.SaveChanges();
-            TempData["modalTitle"] = "婉拒成功。";
-            TempData["modalBody"] = "如果改變主意或者有其他問題，請洽詢主辦者，謝謝您~";
-
-            return Json(Url.Action("ApplicationForm", "Activities", new { id = thisAppForm.ActivityId }));
+            return RedirectToAction("ApplicationForm", new { id = activitiesApplication.ActivityId });
         }
 
         // GET: Activities/Create
@@ -381,13 +350,13 @@ namespace EnterprisePortal.Controllers
             if (ModelState.IsValid)
             {
                 Activity thisActivity = db.Activities.FirstOrDefault(f => f.ActivityId == activity.ActivityId);
-                thisActivity.Title = activity.Title;
-                thisActivity.Summary = editor;
+                thisActivity.Title = activity.Title ?? thisActivity.Title;
+                thisActivity.Summary = editor ?? thisActivity.Summary;
                 thisActivity.ActivityType = activity.ActivityType;
                 thisActivity.ActivityStatus = activity.ActivityStatus;
                 thisActivity.EndTime = activity.EndTime;
                 string currentPicture = ProcessImage(croppedImage);
-                thisActivity.Picture = string.IsNullOrEmpty(currentPicture) ? thisActivity.Picture : currentPicture;
+                thisActivity.Picture = String.IsNullOrEmpty(currentPicture) ? thisActivity.Picture : currentPicture;
                 var log = CurrentUser.RecordActivity(LogAction.修改, LogArea.活動, $"{activity.Title}(id= {activity.ActivityId})");
                 db.UserLogs.Add(log);
 
@@ -419,6 +388,8 @@ namespace EnterprisePortal.Controllers
         {
             Activity activity = db.Activities.Find(id);
             db.Activities.Remove(activity);
+            var messageLists = db.MessageLists.Where(w => w.ActivityId == id);
+            db.MessageLists.RemoveRange(messageLists);
             var log = CurrentUser.RecordActivity(LogAction.刪除, LogArea.活動, $"{activity.Title}(id= {activity.ActivityId})");
             db.UserLogs.Add(log);
 
@@ -430,7 +401,7 @@ namespace EnterprisePortal.Controllers
         {
             if (!string.IsNullOrWhiteSpace(croppedImage))
             {
-                string filePath = $"~/Upload/{folder}/{DateTime.Now:yyyyMMddhhmm}.png";
+                string filePath = "~" + eventFolder + DateTime.Now.ToString("yyyyMMddhhmm") + ".png";
                 string base64 = croppedImage;
                 byte[] bytes = Convert.FromBase64String(base64.Split(',')[1]);
                 using (FileStream stream = new FileStream(Server.MapPath(filePath), FileMode.Create))
@@ -445,9 +416,8 @@ namespace EnterprisePortal.Controllers
 
         private string DefaultImage(int type)
         {
-            string path = "~/Upload/" + folder + "/";
             string filename = $"event{type}.jpg";
-            return path + filename;
+            return filename;
         }
 
         [HttpGet]
@@ -495,130 +465,11 @@ namespace EnterprisePortal.Controllers
         public ActionResult SendGroup(int? activityId, DepartmentDataModel data)
         {
             Activity activity = db.Activities.FirstOrDefault(f => f.ActivityId == activityId);
-            var ApplicationForms = DistributeApplicationForms(activity, data.Departments, data.UserIds, data.UserAccounts);
-
             activity.DepartmentsIds = GetDepsString(data.Departments);
-            activity.ColleaguesIds = GetUserAccountsString(data.UserAccounts);
+            activity.ColleaguesIds = GetUserAccountsString(data.UserAccounts, data.UserIds);
 
-            ApplicationForms.ForEach(n => db.ActivitiesApplications.Add(n));
             db.SaveChanges();
             return RedirectToAction("Index", "Activities");
-        }
-
-        private List<ActivitiesApplication> DistributeApplicationForms(Activity activity, string[] deps, string[] userId, string[] userAccount)
-        {
-            string tempName = "tempJohnDoe";
-            string tempId = "A123456789";
-            string tempEmail = "temp@temp.com";
-            string tempCell = "0912345678";
-
-            var applicationForms = new List<ActivitiesApplication>();
-            var IndivsAlreadySent = new List<int>();
-
-            if (userAccount != null)
-            {
-                int total = 0;
-                int totalLength = userAccount.Length;
-                var accounts = db.UserAccounts.ToList();
-                foreach (var item in accounts)
-                {
-                    if (userAccount.Contains(item.Account))
-                    {
-                        IndivsAlreadySent.Add(item.UserId);
-                        total++;
-                    }
-                    if (total == totalLength)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            if (userId != null)
-            {
-                foreach (string searchUser in userId)
-                {
-                    //check if user already received form
-                    int chosenUserId = int.Parse(searchUser);
-                    var formSent = db.ActivitiesApplications.FirstOrDefault(f => f.UserId == chosenUserId && f.ActivityId == activity.ActivityId);
-                    if (formSent == null)
-                    {
-                        ActivitiesApplication applicationForm = new ActivitiesApplication
-                        {
-                            UserId = chosenUserId,
-                            ActivityId = activity.ActivityId,
-                            Name = tempName,
-                            CitizenId = tempId,
-                            Email = tempEmail,
-                            CellNumber = tempCell
-                        };
-                        applicationForms.Add(applicationForm);
-                    }
-                }
-            }
-
-            if (deps != null)
-            {
-                //not first time sent
-                if (activity.DepartmentsIds != null)
-                {
-                    string[] FormsAlreadySent = activity.DepartmentsIds.Split(',');
-                    foreach (string dep in deps)
-                    {
-                        bool IsDepSent = FormsAlreadySent.Contains(dep);
-                        if (!IsDepSent)
-                        {
-                            int intDep = int.Parse(dep);
-                            var chosenDep = db.Departments.FirstOrDefault(f => f.DepartmentId == intDep);
-                            foreach (var user in chosenDep.UserAccounts)
-                            {
-                                bool IsIndivSent = IndivsAlreadySent.Contains(user.UserId);
-                                if (!IsIndivSent)
-                                {
-                                    ActivitiesApplication applicationForm = new ActivitiesApplication
-                                    {
-                                        UserId = user.UserId,
-                                        ActivityId = activity.ActivityId,
-                                        Name = tempName,
-                                        CitizenId = tempId,
-                                        Email = tempEmail,
-                                        CellNumber = tempCell
-                                    };
-                                    applicationForms.Add(applicationForm);
-                                }
-                            }
-                        }
-                    }
-                }
-                //first time sent
-                else
-                {
-                    foreach (string dep in deps)
-                    {
-                        int intDep = int.Parse(dep);
-                        var chosenDep = db.Departments.FirstOrDefault(f => f.DepartmentId == intDep);
-                        foreach (var user in chosenDep.UserAccounts)
-                        {
-                            bool IsIndivSent = IndivsAlreadySent.Contains(user.UserId);
-                            if (!IsIndivSent)
-                            {
-                                ActivitiesApplication applicationForm = new ActivitiesApplication
-                                {
-                                    UserId = user.UserId,
-                                    ActivityId = activity.ActivityId,
-                                    Name = tempName,
-                                    CitizenId = tempId,
-                                    Email = tempEmail,
-                                    CellNumber = tempCell
-                                };
-                                applicationForms.Add(applicationForm);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return applicationForms;
         }
 
         private string GetDepsString(string[] deps)
@@ -634,12 +485,12 @@ namespace EnterprisePortal.Controllers
             return result.TrimEnd(',');
         }
 
-        private string GetUserAccountsString(string[] searchUsers)
+        private string GetUserAccountsString(string[] accounts, string[] userIds)
         {
             string result = string.Empty;
-            if (searchUsers != null)
+            if (accounts != null)
             {
-                foreach (string item in searchUsers)
+                foreach (string item in accounts)
                 {
                     result += item + ",";
                 }

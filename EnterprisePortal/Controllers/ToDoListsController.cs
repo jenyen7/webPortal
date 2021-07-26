@@ -73,7 +73,7 @@ namespace EnterprisePortal.Controllers
                                     }, "Value", "Text", filterStatus);
 
             int currentUserId = int.Parse(System.Web.HttpContext.Current.User.Identity.Name);
-            var toDoLists = db.ToDoLists.Where(w => w.UserId == currentUserId);
+            var toDoLists = db.ToDoLists.Where(w => w.UserId == currentUserId && w.ListType == ListType.待辦);
 
             if (!String.IsNullOrEmpty(searchString))
             {
@@ -203,7 +203,7 @@ namespace EnterprisePortal.Controllers
             {
                 ToDoList thisToDoList = db.ToDoLists.FirstOrDefault(f => f.ToDoListId == toDoList.ToDoListId);
                 thisToDoList.Title = toDoList.Title ?? thisToDoList.Title;
-                thisToDoList.Summary = toDoList.Summary ?? thisToDoList.Summary;
+                thisToDoList.Summary = thisToDoList.Summary;
                 thisToDoList.EndTime = toDoList.EndTime;
                 thisToDoList.ListStatus = toDoList.ListStatus;
                 db.SaveChanges();

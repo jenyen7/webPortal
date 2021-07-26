@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.IO;
@@ -17,7 +18,7 @@ namespace EnterprisePortal.Controllers
     public class UserAccountsController : Controller
     {
         private readonly PortalModel db = new PortalModel();
-        private readonly string folder = "Avatars";
+        private readonly string avatarFolder = ConfigurationManager.AppSettings["routeAvatarFolder"];
 
         // GET: UserAccounts
         public ActionResult Index()
@@ -70,7 +71,7 @@ namespace EnterprisePortal.Controllers
                 {
                     TempData["messageForEmail"] = "Email格式不符合";
                 }
-                string message = Utility.UploadImage(file, folder);
+                string message = Utility.UploadImage(file, avatarFolder);
                 if (!message.StartsWith("~/Upload"))
                 {
                     TempData["messageForAvatar"] = message;
@@ -83,7 +84,7 @@ namespace EnterprisePortal.Controllers
                 }
                 else
                 {
-                    userAccount.Avatar = message;
+                    userAccount.Avatar = message.Substring(message.LastIndexOf('/') + 1);
                     userAccount.IsEnable = true;
                     userAccount.JoinedDate = DateTime.Now;
                     userAccount.PasswordSalt = Salt.CreateSalt();
@@ -113,6 +114,7 @@ namespace EnterprisePortal.Controllers
             {
                 return HttpNotFound();
             }
+            userAccount.Avatar = avatarFolder + userAccount.Avatar;
             ViewBag.DepId = new SelectList(db.Departments, "DepartmentId", "DepartmentName", userAccount.DepId);
             return View(userAccount);
         }
@@ -144,7 +146,7 @@ namespace EnterprisePortal.Controllers
             string message = "";
             if (file != null)
             {
-                message = Utility.UploadImage(file, folder);
+                message = Utility.UploadImage(file, avatarFolder);
                 if (!message.StartsWith("~/Upload"))
                 {
                     TempData["messageForAvatar"] = message;
@@ -156,24 +158,48 @@ namespace EnterprisePortal.Controllers
                 return View(userAccount);
             }
 
-            if (!string.IsNullOrWhiteSpace(userAccount.Password))
+            if (!String.IsNullOrWhiteSpace(userAccount.Password))
             {
                 thisUser.PasswordSalt = Salt.CreateSalt();
                 thisUser.Password = Salt.GenerateHashWithSalt(userAccount.Password, thisUser.PasswordSalt);
             }
-
+            if (!String.IsNullOrEmpty(message))
+            {
+                thisUser.Avatar = message.Substring(message.LastIndexOf('/') + 1);
+            }
             thisUser.PhoneNumber = userAccount.PhoneNumber ?? thisUser.PhoneNumber;
             thisUser.Email = userAccount.Email ?? thisUser.Email;
             thisUser.IsEnable = userAccount.IsEnable;
             thisUser.DepId = userAccount.DepId;
-            thisUser.Avatar = string.IsNullOrEmpty(message) ? thisUser.Avatar : message;
+
             var log = CurrentUser.RecordActivity(LogAction.修改, LogArea.帳號, $"{userAccount.Account}(id= {userAccount.UserId})");
             db.UserLogs.Add(log);
 
             db.SaveChanges();
-
             RecordUserRoles(thisUser, roles);
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public JsonResult IsAccountRepeated(string account, string initialAccount)
+        {
+            if (account == initialAccount)
+            {
+                return Json(true, JsonRequestBehavior.AllowGet);
+            }
+            var accounts = db.UserAccounts.FirstOrDefault(u => u.Account.Equals(account));
+            return Json(accounts == null, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult IsEmailRepeated(string email, string initialEmail)
+        {
+            if (email == initialEmail)
+            {
+                return Json(true, JsonRequestBehavior.AllowGet);
+            }
+            var emails = db.UserAccounts.FirstOrDefault(u => u.Email.Equals(email));
+            return Json(emails == null, JsonRequestBehavior.AllowGet);
         }
 
         // GET: UserAccounts/Delete/5

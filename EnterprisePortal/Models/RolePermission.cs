@@ -13,7 +13,7 @@ namespace EnterprisePortal.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PermissionId { get; set; }
 
-        [Required(ErrorMessage = "{0}必填")]
+        [Required]
         [Display(Name = "權限名稱")]
         [StringLength(50)]
         public string PermissionName { get; set; }
@@ -28,16 +28,16 @@ namespace EnterprisePortal.Models
         [Display(Name = "子類別")]
         public virtual ICollection<RolePermission> PermissionList { get; set; }
 
-        [Required(ErrorMessage = "{0}必填")]
+        [Required]
         [Display(Name = "權限代號")]
         [StringLength(50)]
         public string PValue { get; set; }
 
-        [Display(Name = "圖樣")]
+        [Display(Name = "圖示")]
         [StringLength(50)]
         public string Icon { get; set; }
 
-        [Required(ErrorMessage = "{0}必填")]
+        [Required]
         [Display(Name = "連結")]
         [StringLength(200)]
         //[DataType(DataType.Url)]

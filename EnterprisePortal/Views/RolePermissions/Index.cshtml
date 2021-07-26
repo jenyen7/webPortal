@@ -31,8 +31,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5>@listName</h5>
-                    <button type="button" class="ti-plus little-plus-btn" id="createBtn" title="新增權限"></button>
-                    <span>如果刪除權限，擁有該權限的角色之相對應權限也會一併消失。</span>
+                    <span>權限管理僅能修改圖示。</span>
                 </div>
                 <div class="card-block">
                     @if (TempData["message"] != null)
@@ -42,19 +41,14 @@
                             <thead>
                                 <tr>
                                     <th>
-                                        @Html.DisplayNameFor(model => model.Permission.PermissionName)
+                                        @*@Html.DisplayNameFor(model => model.Permission.PermissionName)*@
+                                        分類名稱
                                     </th>
                                     <th>
                                         @Html.DisplayNameFor(model => model.PermissionName)
                                     </th>
                                     <th>
-                                        @Html.DisplayNameFor(model => model.PValue)
-                                    </th>
-                                    <th>
                                         @Html.DisplayNameFor(model => model.Icon)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.Url)
                                     </th>
                                     <th></th>
                                 </tr>
@@ -70,25 +64,15 @@
                                             @Html.DisplayFor(modelItem => item.PermissionName)
                                         </td>
                                         <td>
-                                            @Html.DisplayFor(modelItem => item.PValue)
-                                        </td>
-                                        <td>
                                             <i class="@item.Icon"></i>
                                         </td>
                                         <td>
-                                            @Html.DisplayFor(modelItem => item.Url)
-                                        </td>
-                                        <td>
                                             @Html.ActionLink(" ", "Edit", new { id = item.PermissionId }, new { @class = "edit-delete-btn ti-pencil-alt", @title = "編輯" })
-                                            @Html.ActionLink(" ", "Delete", new { id = item.PermissionId }, new { @class = "edit-delete-btn ti-trash delete", @data_toggle = "modal", @data_target = "#myModal", @data_id = item.PermissionId, @title = "刪除" })
                                         </td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
-                        <input type="hidden" id="itemid" value="" />
-                        @Html.AntiForgeryToken()
-                        @Html.Partial("_ModalDeletePartial")
                     </div>
                 </div>
             </div>

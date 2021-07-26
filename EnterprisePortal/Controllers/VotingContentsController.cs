@@ -21,21 +21,6 @@ namespace EnterprisePortal.Controllers
             return View(votingContents.ToList());
         }
 
-        // GET: VotingContents/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            VotingContent votingContent = db.VotingContents.Find(id);
-            if (votingContent == null)
-            {
-                return HttpNotFound();
-            }
-            return View(votingContent);
-        }
-
         // GET: VotingContents/Create
         public ActionResult Create(int? id)
         {

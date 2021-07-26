@@ -48,6 +48,7 @@
                                 @Html.LabelFor(model => model.RoleTitle, htmlAttributes: new { @class = "control-label col-md-2" })
                                 <div class="col-md-11">
                                     @Html.EditorFor(model => model.RoleTitle, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.Hidden("InitialRole", Model.RoleTitle)
                                     @Html.ValidationMessageFor(model => model.RoleTitle, "", new { @class = "text-danger" })
                                     @if (TempData["message"] != null)
                                     {<span style="color:red">@TempData["message"].ToString()</span>}
@@ -63,13 +64,12 @@
                             </div>
 
                             <div class="form-group">
-                                @Html.LabelFor(model => model.RoleValue, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
+                                <label class="control-label col-md-2 not-required" for="RoleValue">角色權限</label>
                                 <div class="col-md-11">
-                                    @Html.EditorFor(model => model.RoleValue, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
-                                    @Html.ValidationMessageFor(model => model.RoleValue, "", new { @class = "text-danger" })
+                                    @Html.EditorFor(model => model.RoleValue, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly", @type = "hidden" } })
                                 </div>
+                                <div class="treeview" style="margin-bottom:30px"></div>
                             </div>
-                            <div class="treeview" style="margin-bottom:30px"></div>
                         </div>
                     </div>
                 </div>

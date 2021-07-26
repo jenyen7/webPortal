@@ -42,6 +42,8 @@ namespace EnterprisePortal.Models
 
         public virtual ICollection<ActivitiesApplication> ActivitiesApplications { get; set; }
 
+        public virtual ICollection<MessageList> MessageLists { get; set; }
+
         [Display(Name = "選擇發送部門")]
         [StringLength(100)]
         public string DepartmentsIds { get; set; }
@@ -62,5 +64,14 @@ namespace EnterprisePortal.Models
         public Activity Activity { get; set; }
 
         public IEnumerable<DepartmentViewModel> DepartmentViewModels { get; set; }
+    }
+
+    public class ActivityApplicationFormViewModel
+    {
+        public ActivitiesApplication ActivitiesApplication { get; set; }
+
+        public Activity Activity { get; set; }
+
+        public ToDoList ToDoList { get; set; }
     }
 }

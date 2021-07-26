@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 
 namespace EnterprisePortal.Models
 {
@@ -15,6 +16,7 @@ namespace EnterprisePortal.Models
 
         [Required(ErrorMessage = "{0}必填")]
         [Display(Name = "帳號名稱")]
+        [Remote("IsAccountRepeated", "UserAccounts", AdditionalFields = "InitialAccount", HttpMethod = "POST", ErrorMessage = "{0}已存在，請重新取名。")]
         [StringLength(50)]
         public string Account { get; set; }
 
@@ -37,6 +39,7 @@ namespace EnterprisePortal.Models
         [Required(ErrorMessage = "Email必填")]
         [Display(Name = "電子郵件")]
         [EmailAddress(ErrorMessage = "Email格式錯誤")]
+        [Remote("IsEmailRepeated", "UserAccounts", AdditionalFields = "InitialEmail", HttpMethod = "POST", ErrorMessage = "{0}已存在，請重新填寫。")]
         [StringLength(50)]
         public string Email { get; set; }
 

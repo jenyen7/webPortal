@@ -54,7 +54,7 @@ namespace EnterprisePortal.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (string.IsNullOrWhiteSpace(role.RoleValue))
+                if (String.IsNullOrWhiteSpace(role.RoleValue))
                 {
                     role.RoleValue = "guest_only";
                 }
@@ -121,6 +121,17 @@ namespace EnterprisePortal.Controllers
             //ViewBag.PermissionId = new SelectList(db.RolePermissions, "PermissionId", "PermissionName", role.PermissionId);
             ViewBag.tree = GetPermissionTree();
             return View(role);
+        }
+
+        [HttpPost]
+        public JsonResult IsRoleAvailable(string roleTitle, string initialRole)
+        {
+            if (roleTitle == initialRole)
+            {
+                return Json(true, JsonRequestBehavior.AllowGet);
+            }
+            var roles = db.Roles.FirstOrDefault(f => f.RoleTitle.Equals(roleTitle));
+            return Json(roles == null, JsonRequestBehavior.AllowGet);
         }
 
         public string GetPermissions(ICollection<RolePermission> list)

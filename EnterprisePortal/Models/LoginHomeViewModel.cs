@@ -57,6 +57,9 @@ namespace EnterprisePortal.Models
         [Display(Name = "標題")]
         public string Title { get; set; }
 
+        [Display(Name = "筆記")]
+        public string Summary { get; set; }
+
         [Display(Name = "狀態")]
         public ToDoListStatus ListStatus { get; set; }
 

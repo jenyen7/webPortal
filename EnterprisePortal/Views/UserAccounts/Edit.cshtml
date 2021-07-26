@@ -88,7 +88,7 @@
                                     @Html.LabelFor(model => model.Account, htmlAttributes: new { @class = "control-label col-md-2 not-required" })
                                     <div class="col-md-12">
                                         @Html.EditorFor(model => model.Account, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
-                                        @Html.ValidationMessageFor(model => model.Account, "", new { @class = "text-danger" })
+                                        @Html.Hidden("InitialAccount", Model.Account)
                                     </div>
                                 </div>
 
@@ -97,7 +97,7 @@
                                     <div class="col-md-12">
                                         @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", @data_val = "false" } })
                                         <input id="showPassword" type="checkbox" onclick="showPassword()"> 顯示密碼
-                                        @*@Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })*@
+                                        @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
                                     </div>
                                 </div>
 
@@ -105,6 +105,7 @@
                                     @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
                                     <div class="col-md-12">
                                         @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.Hidden("InitialEmail", Model.Email)
                                         @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
                                         @if (TempData["messageForEmail"] != null)
                                         {<span style="color:red">@TempData["messageForEmail"].ToString()</span>}
@@ -154,7 +155,7 @@
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
     <script type="text/javascript">
-    let original_avatar = '@Model.Avatar.Substring(1)';
+        let original_avatar = '@Model.Avatar';
         $('#user_img').attr('src', original_avatar);
 
         $('#showPassword').click(function () {

@@ -14,7 +14,7 @@ namespace EnterprisePortal.Utils
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             string urlToPost = "https://www.google.com/recaptcha/api/siteverify";
-            string secretKey = System.Web.Configuration.WebConfigurationManager.AppSettings["reCaptcha_secret"];
+            string secretKey = System.Configuration.ConfigurationManager.AppSettings["reCaptcha_secret"];
             string captchaResponse = filterContext.HttpContext.Request.Form["g-recaptcha-response"];
 
             if (string.IsNullOrWhiteSpace(captchaResponse)) AddErrorAndRedirectToGetAction(filterContext);

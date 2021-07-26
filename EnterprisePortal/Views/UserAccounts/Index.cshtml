@@ -4,6 +4,7 @@
     string title = "使用者帳號";
     string listName = title + "列表";
     ViewBag.Title = title;
+    string folder = System.Web.Configuration.WebConfigurationManager.AppSettings["routeAvatarFolder"];
 }
 
 <div class="page-header">
@@ -65,7 +66,7 @@
                                 {
                                     <tr>
                                         <td>
-                                            @Html.DisplayFor(modelItem => item.Department.DepartmentName)
+                                            <label class="label label-md" style="background-color:@item.Department.DepartmentColor">@item.Department.DepartmentName</label>
                                         </td>
                                         <td>
                                             @Html.DisplayFor(modelItem => item.Account)
@@ -77,7 +78,8 @@
                                             @Html.DisplayFor(modelItem => item.Email)
                                         </td>
                                         <td>
-                                            <img src="@Url.Content(item.Avatar)" alt="profile_picture" height="40" width="40" style="border-radius:50%" />
+                                            @{ string avatar = folder + item.Avatar;}
+                                            <img src="@avatar" alt="profile_picture" height="40" width="40" style="border-radius:50%" />
                                         </td>
                                         <td style="max-width:160px; display:flex; flex-wrap:wrap">
                                             @foreach (var role in item.UserRoles)

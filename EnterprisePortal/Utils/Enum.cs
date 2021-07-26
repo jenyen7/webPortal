@@ -28,10 +28,9 @@ namespace EnterprisePortal.Utils
 
         public enum ListType
         {
-            公告 = 0,
-            待辦 = 1,
-            活動 = 2,
-            投票 = 3
+            待辦 = 0,
+            活動 = 1,
+            投票 = 2
         }
 
         public enum ToDoListStatus

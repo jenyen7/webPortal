@@ -418,6 +418,8 @@ namespace EnterprisePortal.Controllers
         {
             Voting voting = db.Votings.Find(id);
             db.Votings.Remove(voting);
+            var messageLists = db.MessageLists.Where(w => w.VotingId == id);
+            db.MessageLists.RemoveRange(messageLists);
             var log = CurrentUser.RecordActivity(LogAction.刪除, LogArea.投票, $"{voting.Title}(id= {voting.VotingId})");
             db.UserLogs.Add(log);
 

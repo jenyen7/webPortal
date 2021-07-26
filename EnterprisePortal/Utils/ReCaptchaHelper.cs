@@ -10,7 +10,7 @@ namespace EnterprisePortal.Utils
     {
         public static IHtmlString GoogleCaptcha(this HtmlHelper helper)
         {
-            string publicSiteKey = System.Web.Configuration.WebConfigurationManager.AppSettings["reCaptcha_key"];
+            string publicSiteKey = System.Configuration.ConfigurationManager.AppSettings["reCaptcha_key"];
 
             var mvcHtmlString = new TagBuilder("div")
             {

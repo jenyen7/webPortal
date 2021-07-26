@@ -37,7 +37,7 @@ namespace EnterprisePortal.Utils
                     filterContext.Controller.ViewBag.Menu = sb.ToString();
                 }
                 filterContext.Controller.ViewBag.Account = user.Account;
-                filterContext.Controller.ViewBag.Avatar = user.Avatar.Substring(1);
+                filterContext.Controller.ViewBag.Avatar = user.Avatar;
                 filterContext.Controller.ViewBag.DepartmentId = user.Department;
 
                 if (!WithoutVerifyPermission(url))
@@ -59,6 +59,7 @@ namespace EnterprisePortal.Utils
 
         private string GetPermission(bool flag, string currentUserPermission, ICollection<RolePermission> list)
         {
+            string routePrefix = System.Configuration.ConfigurationManager.AppSettings["routePrefix"];
             StringBuilder sb = new StringBuilder();
             foreach (RolePermission permission in list)
             {
@@ -83,7 +84,7 @@ namespace EnterprisePortal.Utils
                         {
                             sb.Append("<ul class='pcoded-item pcoded-left-item'>");
                             sb.Append("<li>");
-                            sb.Append($"<a href='{permission.Url}'>");
+                            sb.Append($"<a href='{routePrefix}{permission.Url}'>");
                             sb.Append($"<span class='pcoded-micon'><i class='{permission.Icon}'></i></span>");
                             sb.Append($"<span class='pcoded-mtext'>{permission.PermissionName}</span>");
                             sb.Append("<span class='pcoded-mcaret'></span>");
@@ -98,7 +99,7 @@ namespace EnterprisePortal.Utils
                                 flag = false;
                                 sb.Append("<ul class='pcoded-submenu'>");
                                 sb.Append("<li>");
-                                sb.Append($"<a href='{permission.Url}'>");
+                                sb.Append($"<a href='{routePrefix}{permission.Url}'>");
                                 sb.Append($"<span class='pcoded-micon'><i class='{permission.Icon}'></i></span>");
                                 sb.Append($"<span class='pcoded-mtext'>{permission.PermissionName}</span>");
                                 sb.Append("<span class='pcoded-mcaret'></span>");
@@ -107,7 +108,7 @@ namespace EnterprisePortal.Utils
                             else
                             {
                                 sb.Append("<li>");
-                                sb.Append($"<a href='{permission.Url}'>");
+                                sb.Append($"<a href='{routePrefix}{permission.Url}'>");
                                 sb.Append($"<span class='pcoded-micon'><i class='{permission.Icon}'></i></span>");
                                 sb.Append($"<span class='pcoded-mtext'>{permission.PermissionName}</span>");
                                 sb.Append("<span class='pcoded-mcaret'></span>");

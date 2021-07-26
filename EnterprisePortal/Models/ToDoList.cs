@@ -14,6 +14,9 @@ namespace EnterprisePortal.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ToDoListId { get; set; }
 
+        [Display(Name = "類型")]
+        public ListType ListType { get; set; }
+
         [Display(Name = "狀態")]
         public ToDoListStatus ListStatus { get; set; }
 

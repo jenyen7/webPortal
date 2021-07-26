@@ -41,7 +41,10 @@ namespace EnterprisePortal.Models
         public string Picture { get; set; }
 
         public virtual ICollection<VotingContent> VotingContents { get; set; }
+
         public virtual ICollection<VotingForm> VotingForms { get; set; }
+
+        public virtual ICollection<MessageList> MessageLists { get; set; }
 
         [Display(Name = "選擇發送部門")]
         [StringLength(100)]

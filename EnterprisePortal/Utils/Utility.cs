@@ -16,7 +16,7 @@ namespace EnterprisePortal.Utils
     {
         public static string UploadImage(HttpPostedFileBase file, string folder)
         {
-            string path = "~/Upload/" + folder + "/";
+            string path = "~" + folder;
             if (file != null)
             {
                 int fileSize = file.ContentLength;

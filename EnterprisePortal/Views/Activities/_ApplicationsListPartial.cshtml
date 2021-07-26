@@ -8,7 +8,7 @@
 @{
     if (Model.Any())
     {
-        <div class="modal-body" style="max-height:600px; overflow-y:auto">
+        <div class="modal-body" style="max-height:1000px; overflow-y:auto">
             <div class="card-header">
                 <h5>@Model.First().Activity.Title</h5>
                 <span>
@@ -28,12 +28,6 @@
                                     @Html.DisplayNameFor(model => model.UserAccount.Account)
                                 </th>
                                 <th>
-                                    @Html.DisplayNameFor(model => model.ListStatus)
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.IsJoiningIn)
-                                </th>
-                                <th>
                                     @Html.DisplayNameFor(model => model.Name)
                                 </th>
                                 <th>
@@ -41,6 +35,18 @@
                                 </th>
                                 <th>
                                     @Html.DisplayNameFor(model => model.CellNumber)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.IsAccompanied)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.PeopleNum)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Transportation)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.IsVegetarian)
                                 </th>
                             </tr>
                         </thead>
@@ -55,45 +61,26 @@
                                         @Html.DisplayFor(modelItem => item.UserAccount.Account)
                                     </td>
                                     <td>
-                                        @if ((int)item.ListStatus == 2)
-                                        {
-                                            <label class="label label-success">已完成</label>
-                                        }
-                                        else
-                                        {
-                                            <label class="label label-warning">尚未填寫</label>
-                                        }
+                                        @Html.DisplayFor(modelItem => item.Name)
                                     </td>
-                                    @{
-                                        string isParticipating = "";
-                                        string className = "";
-                                        string name = "";
-                                        string email = "";
-                                        string cellNum = "";
-
-                                        if ((int)item.ListStatus == 2)
-                                        {
-                                            if (item.IsJoiningIn)
-                                            {
-                                                isParticipating = "參加";
-                                                className = "label label-inverse-success";
-                                                name = item.Name;
-                                                email = item.Email;
-                                                cellNum = item.CellNumber;
-                                            }
-                                            else
-                                            {
-                                                isParticipating = "婉拒";
-                                                className = "label label-inverse-danger";
-                                            }
-                                        }
-                                    }
                                     <td>
-                                        <label class="@className">@isParticipating</label>
+                                        @Html.DisplayFor(modelItem => item.Email)
                                     </td>
-                                    <td>@name</td>
-                                    <td>@email</td>
-                                    <td>@cellNum</td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CellNumber)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.IsAccompanied)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.PeopleNum)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Transportation)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.IsVegetarian)
+                                    </td>
                                 </tr>
                             }
                         </tbody>

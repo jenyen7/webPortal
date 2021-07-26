@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace EnterprisePortal.Controllers
     public class MessageListsController : Controller
     {
         private readonly PortalModel db = new PortalModel();
+        private readonly string avatarFolder = ConfigurationManager.AppSettings["routeAvatarFolder"];
 
         // GET: MessageLists
         public ActionResult Index()
@@ -41,7 +43,7 @@ namespace EnterprisePortal.Controllers
                 var userAnswerer = db.UserAccounts.FirstOrDefault(f => f.UserId == msgList.AnswererId);
                 if (userAnswerer != null)
                 {
-                    avatar = userAnswerer.Avatar.Substring(1);
+                    avatar = avatarFolder + userAnswerer.Avatar;
                     name = userAnswerer.Account;
                 }
                 else
@@ -56,7 +58,7 @@ namespace EnterprisePortal.Controllers
                 var userQuestionner = db.UserAccounts.FirstOrDefault(f => f.UserId == msgList.QuestionerId);
                 if (userQuestionner != null)
                 {
-                    avatar = userQuestionner.Avatar.Substring(1);
+                    avatar = avatarFolder + userQuestionner.Avatar;
                     name = userQuestionner.Account;
                 }
                 else
@@ -121,6 +123,11 @@ namespace EnterprisePortal.Controllers
                     var checkPresence = db.MessageLists.FirstOrDefault(f => f.QuestionerId == messageList.QuestionerId && f.AnswererId == messageList.AnswererId && f.ActivityId == messageList.ActivityId);
                     if (checkPresence != null)
                     {
+                        if (!checkPresence.IsVisible)
+                        {
+                            checkPresence.IsVisible = true;
+                            db.SaveChanges();
+                        }
                         return Json(Url.Action("Messages", new { id = checkPresence.MessageListId }));
                     }
                 }
@@ -129,6 +136,11 @@ namespace EnterprisePortal.Controllers
                     var checkPresence = db.MessageLists.FirstOrDefault(f => f.QuestionerId == messageList.QuestionerId && f.AnswererId == messageList.AnswererId && f.VotingId == messageList.VotingId);
                     if (checkPresence != null)
                     {
+                        if (!checkPresence.IsVisible)
+                        {
+                            checkPresence.IsVisible = true;
+                            db.SaveChanges();
+                        }
                         return Json(Url.Action("Messages", new { id = checkPresence.MessageListId }));
                     }
                 }

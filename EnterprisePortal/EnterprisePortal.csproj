@@ -351,6 +351,14 @@
     <Compile Include="Migrations\202107200820043_add answerer to messages.Designer.cs">
       <DependentUpon>202107200820043_add answerer to messages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107231512099_add list type back to todolist.cs" />
+    <Compile Include="Migrations\202107231512099_add list type back to todolist.Designer.cs">
+      <DependentUpon>202107231512099_add list type back to todolist.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107260130247_some final arrangements.cs" />
+    <Compile Include="Migrations\202107260130247_some final arrangements.Designer.cs">
+      <DependentUpon>202107260130247_some final arrangements.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\Department.cs" />
@@ -1282,6 +1290,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202107200820043_add answerer to messages.resx">
       <DependentUpon>202107200820043_add answerer to messages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107231512099_add list type back to todolist.resx">
+      <DependentUpon>202107231512099_add list type back to todolist.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107260130247_some final arrangements.resx">
+      <DependentUpon>202107260130247_some final arrangements.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

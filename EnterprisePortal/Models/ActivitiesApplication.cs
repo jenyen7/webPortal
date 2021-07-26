@@ -14,9 +14,6 @@ namespace EnterprisePortal.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ApplicationId { get; set; }
 
-        [Display(Name = "狀態")]
-        public ToDoListStatus ListStatus { get; set; }
-
         [Display(Name = "誰報名的")]
         public int UserId { get; set; }
 
@@ -29,9 +26,6 @@ namespace EnterprisePortal.Models
         [ForeignKey("ActivityId")]
         public virtual Activity Activity { get; set; }
 
-        [Display(Name = "是否參加")]
-        public bool IsJoiningIn { get; set; }
-
         [Required(ErrorMessage = "{0}必填")]
         [Display(Name = "名字")]
         [StringLength(50)]
@@ -39,8 +33,8 @@ namespace EnterprisePortal.Models
 
         [Required(ErrorMessage = "{0}必填")]
         [Display(Name = "身分證字號")]
+        //[RegularExpression(@"^[A-Z][12]\d{8}$", ErrorMessage = "身分證字號格式錯誤")]
         [StringLength(30)]
-        [RegularExpression(@"^[A-Z][12]\d{8}$", ErrorMessage = "身分證字號格式錯誤")]
         public string CitizenId { get; set; }
 
         [Required(ErrorMessage = "{0}必填")]
