@@ -232,39 +232,44 @@ namespace EnterprisePortal.Controllers
         {
             int currentUserId = int.Parse(System.Web.HttpContext.Current.User.Identity.Name);
 
-            var toDoLists = db.ToDoLists.Where(w => w.UserId == currentUserId).OrderByDescending(o => o.PublishedDate).Take(75).ToList();
-            var votingLists = db.VotingForms.Where(w => w.UserId == currentUserId).OrderByDescending(o => o.Voting.PublishedDate).Take(25).ToList();
+            var toDoLists = db.ToDoLists
+                .Where(w => w.UserId == currentUserId)
+                .Select(s => new AllList
+                {
+                    Id = s.ToDoListId,
+                    ListType = s.ListType,
+                    ListStatus = s.ListStatus,
+                    Title = s.Title,
+                    Summary = s.Summary,
+                    EndTime = s.EndTime,
+                    PublishedDate = s.PublishedDate
+                })
+                .OrderByDescending(o => o.PublishedDate).Take(75).ToList();
 
-            var allLists = new List<AllList>();
-            toDoLists.ForEach(item => allLists.Add(new AllList()
-            {
-                Id = item.ToDoListId,
-                ListType = item.ListType,
-                Title = item.Title,
-                Summary = item.Summary,
-                ListStatus = item.ListStatus,
-                EndTime = item.EndTime,
-                PublishedDate = item.PublishedDate
-            }));
-            votingLists.ForEach(item => allLists.Add(new AllList()
-            {
-                Id = item.VotingId,
-                ListType = ListType.投票,
-                Title = item.Voting.Title,
-                ListStatus = item.ListStatus,
-                EndTime = item.Voting.EndTime,
-                PublishedDate = item.Voting.PublishedDate
-            }));
+            var votingLists = db.VotingForms
+                .Where(w => w.UserId == currentUserId)
+                .Select(s => new AllList
+                {
+                    Id = s.VotingId,
+                    ListType = ListType.投票,
+                    ListStatus = s.ListStatus,
+                    Title = s.Voting.Title,
+                    Summary = s.Voting.Summary,
+                    EndTime = s.Voting.EndTime,
+                    PublishedDate = s.Voting.PublishedDate
+                })
+                .OrderByDescending(o => o.PublishedDate).Take(25).ToList();
+
+            var allLists = toDoLists.Union(votingLists);
 
             UserAccount user = db.UserAccounts.FirstOrDefault(f => f.UserId == currentUserId);
-            string avatar = avatarFolder + user.Avatar;
             var announcements = db.Announcements.Where(w => w.DepId == user.DepId || w.IsPublic).OrderByDescending(o => o.PublishedDate).Take(50).ToList();
 
             SettingsViewModel settings = new SettingsViewModel
             {
                 Account = user.Account,
                 Email = user.Email,
-                Avatar = avatar,
+                Avatar = avatarFolder + user.Avatar,
                 Department = user.Department.DepartmentName,
                 JoinedDate = user.JoinedDate.ToString("yyyy-MM-dd")
             };
